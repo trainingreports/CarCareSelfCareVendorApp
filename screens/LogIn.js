@@ -23,7 +23,7 @@ class Login extends React.Component {
     var data = new FormData();
     data.append('email', this.state.email);
     data.append('password', this.state.password);
-    var BASE_URl = 'http://testing.demo2server.com/careapp/carcare/api/v1/';
+    var BASE_URl = 'https://xionex.in/CarCare/';
     <ProgressDialog visible={this.state.visible} />
     var config = {
       method: 'post',
@@ -76,7 +76,10 @@ class Login extends React.Component {
               onChangeText={text => this.setState({ password: text })}
             />
 
-            <TouchableOpacity onPress={() => { navigation.navigate("ForgetPassword") }}>
+            <TouchableOpacity onPress={() => { 
+              // navigation.navigate("ForgetPassword")
+              navigation.navigate("CarServiceDetailsStack")
+             }}>
               <Text style={styles.textForgotPassword}>Forgot Password?</Text>
             </TouchableOpacity>
 

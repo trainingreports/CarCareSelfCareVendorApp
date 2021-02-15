@@ -15,11 +15,12 @@ import AddAccountWithButton from '../screens/AddAccountWithButton';
 import AddBankAccount from '../screens/AddBankAccount';
 import Notification from '../screens/Notification';
 import Setting from '../screens/Setting';
-import AddService from '../screens/AddService';
+import AddSelfCareService from '../screens/AddSelfCareService';
 import PaymentActivity1 from '../screens/PaymentActivity1';
 import ChangePassword from '../screens/ChangePassword';
 import GenerateOfferCode from '../screens/GenerateOfferCode';
 import BookingDetails from '../screens/BookingDetails';
+import CarServiceDetails from '../screens/CarServiceDetails';
 import PaymentActivity2 from '../screens/PaymentActivity2';
 
 import { Images } from '../constants';
@@ -99,7 +100,7 @@ function AppStack(props) {
       initialRouteName="Home"
     >
       <Drawer.Screen name="Home" component={HomeStack} />
-      <Drawer.Screen name="EmpAvaility" component={EmpAvailityStack} />
+      {/* <Drawer.Screen name="EmpAvaility" component={EmpAvailityStack} /> */}
     </Drawer.Navigator>
   );
 }
@@ -124,6 +125,20 @@ function BookingDetailsStack(props) {
       <Stack.Screen
         name="Booking Details"
         component={BookingDetails}
+        option={{
+          headerTransparent: true
+        }}
+      />
+    </Stack.Navigator>
+  )
+}
+
+function CarServiceDetailsStack(props) {
+  return (
+    <Stack.Navigator mode="card">
+      <Stack.Screen
+        name="Booking Details"
+        component={CarServiceDetails}
         option={{
           headerTransparent: true
         }}
@@ -261,8 +276,9 @@ export default function LoginStack(props) {
           headerTransparent: true
         }}
       />
-      <Stack.Screen name="AddServiceStack" component={AddServiceStack} />
+      <Stack.Screen name="AddSelfCareServiceStack" component={AddSelfCareService} />
       <Stack.Screen name="BookingDetailsStack" component={BookingDetailsStack} />
+      <Stack.Screen name="CarServiceDetailsStack" component={CarServiceDetailsStack} />
       <Stack.Screen name="OfferCodeStack" component={OfferCodeStack} />
       <Stack.Screen name="NotificationStack" component={NotificationStack} />
       <Stack.Screen name="AddBankAccountStack" component={AddBankAccountStack} />
