@@ -2,11 +2,11 @@ import React from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 
-import Home         from "./Home";
-import HomeService  from "./HomeService";
-import HomeMore     from "./HomeMore";
-import HomeOffer    from "./HomeOffer";
-import HomeRevenue  from "./HomeRevenue";
+import Home                 from "./bottomMenuScreens/Home";
+import HomeSelfCareService  from "./bottomMenuScreens/HomeSelfCareService";
+import HomeMore             from "./bottomMenuScreens/HomeMore";
+import HomeOffer            from "./bottomMenuScreens/HomeOffer";
+import HomeRevenue          from "./bottomMenuScreens/HomeRevenue";
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -39,7 +39,7 @@ class Main extends React.Component{
                         ),
                     }} 
                 />
-                <Tab.Screen name="ADD SERVICE" component={HomeService}
+                <Tab.Screen name="ADD SERVICE" component={HomeSelfCareService}
                     options={{
                         tabBarLabel: 'ADD SERVICE',
                         tabBarIcon: ({ color }) => (

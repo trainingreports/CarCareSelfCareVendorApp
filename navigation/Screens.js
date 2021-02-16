@@ -1,27 +1,28 @@
 import React from 'react';
-import { Text, View, Image } from "react-native";
+import { Image } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 
 // screens
 import Home from '../screens/Main';
-import Login from '../screens/LogIn';
-import SignUp from '../screens/SignUp';
-import ForgetPassword from '../screens/ForgotPassword';
-import EmpAvaility from '../screens/EmpAvaility';
-import VerifyOtp from '../screens/VerifyOtp';
-import Profile from '../screens/Profile';
-import AddAccountWithButton from '../screens/AddAccountWithButton';
-import AddBankAccount from '../screens/AddBankAccount';
-import Notification from '../screens/Notification';
-import Setting from '../screens/Setting';
-import AddSelfCareService from '../screens/AddSelfCareService';
-import PaymentActivity1 from '../screens/PaymentActivity1';
-import ChangePassword from '../screens/ChangePassword';
-import GenerateOfferCode from '../screens/GenerateOfferCode';
-import BookingDetails from '../screens/BookingDetails';
-import CarServiceDetails from '../screens/CarServiceDetails';
-import PaymentActivity2 from '../screens/PaymentActivity2';
+import Login from '../screens/registration/LogIn';
+import SignUp from '../screens/registration/SignUp';
+import ForgetPassword from '../screens/registration/ForgotPassword';
+import EmpAvaility from '../screens/selfCare/SelfCareEmpAvaility';
+import VerifyOtp from '../screens/registration/VerifyOtp';
+import Profile from '../screens/selfCare/ProfileSelfCare';
+import SelfCareProfileEdit from '../screens/selfCare/SelfCareProfileEdit';
+import AddAccountWithButton from '../screens/profileMoreMenu/AddAccountWithButton';
+import AddBankAccount from '../screens/profileMoreMenu/AddBankAccount';
+import Notification from '../screens/profileMoreMenu/Notification';
+import Setting from '../screens/profileMoreMenu/Setting';
+import AddSelfCareService from '../screens/selfCare/AddSelfCareService';
+import PaymentActivity1 from '../screens/profileMoreMenu/PaymentActivity1';
+import ChangePassword from '../screens/profileMoreMenu/ChangePassword';
+import GenerateOfferCode from '../screens/common/GenerateOfferCode';
+import BookingDetails from '../screens/common/BookingDetails';
+import SelfCareServiceDetails from '../screens/selfCare/SelfCareServiceDetails';
+import PaymentActivity2 from '../screens/profileMoreMenu/PaymentActivity2';
 
 import { Images } from '../constants';
 
@@ -100,11 +101,24 @@ function AppStack(props) {
       initialRouteName="Home"
     >
       <Drawer.Screen name="Home" component={HomeStack} />
-      {/* <Drawer.Screen name="EmpAvaility" component={EmpAvailityStack} /> */}
+      <Drawer.Screen name="EmpAvaility" component={EmpAvailityStack} />
     </Drawer.Navigator>
   );
 }
 
+function ProfileEditStack(props) {
+  return (
+    <Stack.Navigator mode="card">
+      <Stack.Screen
+        name="ProfileEdit"
+        component={SelfCareProfileEdit}
+        option={{
+          headerTransparent: true
+        }}
+      />
+    </Stack.Navigator>
+  )
+}
 function NotificationStack(props) {
   return (
     <Stack.Navigator mode="card">
@@ -133,12 +147,26 @@ function BookingDetailsStack(props) {
   )
 }
 
-function CarServiceDetailsStack(props) {
+function SelfCareServiceDetailsStack(props) {
   return (
     <Stack.Navigator mode="card">
       <Stack.Screen
-        name="Booking Details"
-        component={CarServiceDetails}
+        name="Service Detail"
+        component={SelfCareServiceDetails}
+        option={{
+          headerTransparent: true
+        }}
+      />
+    </Stack.Navigator>
+  )
+}
+
+function CarProductDetailsStsck(props) {
+  return (
+    <Stack.Navigator mode="card">
+      <Stack.Screen
+        name="Service Detail"
+        component={CarProductDetails}
         option={{
           headerTransparent: true
         }}
@@ -194,6 +222,20 @@ function AddBankAccountStack(props) {
       <Stack.Screen
         name="Bank Account"
         component={AddAccountWithButton}
+        option={{
+          headerTransparent: true
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function AddSelfCareServiceStack(props) {
+  return (
+    <Stack.Navigator mode="card">
+      <Stack.Screen
+        name="AddSelfCareService"
+        component={AddSelfCareService}
         option={{
           headerTransparent: true
         }}
@@ -276,9 +318,11 @@ export default function LoginStack(props) {
           headerTransparent: true
         }}
       />
-      <Stack.Screen name="AddSelfCareServiceStack" component={AddSelfCareService} />
+      <Stack.Screen name="ProfileEdit" component={ProfileEditStack} />
+      <Stack.Screen name="SelfCareServiceDetails" component={SelfCareServiceDetailsStack} />
+      <Stack.Screen name="AddSelfCareService" component={AddSelfCareServiceStack} />
       <Stack.Screen name="BookingDetailsStack" component={BookingDetailsStack} />
-      <Stack.Screen name="CarServiceDetailsStack" component={CarServiceDetailsStack} />
+      <Stack.Screen name="CarProductDetails" component={CarProductDetailsStsck} />
       <Stack.Screen name="OfferCodeStack" component={OfferCodeStack} />
       <Stack.Screen name="NotificationStack" component={NotificationStack} />
       <Stack.Screen name="AddBankAccountStack" component={AddBankAccountStack} />
