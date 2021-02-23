@@ -15,15 +15,68 @@ import {
   Picker
 } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
+import UserPermissions from "../../UserPermissions";
+import * as ImagePicker from "expo-image-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import moment from 'moment';
 
 const SelfCareProfileEdit = ({ navigation }) => {
-  const [profile,setProfile] = useState({})
+  const [profile,setProfile] = useState({});
+  const [date] = useState(new Date(1598051730000));
+  const [pickerOne,setPickerOne] = useState(false)
+  const [pickerTwo,setPickerTwo] = useState(false)
+
+  const [gender,setGender] = useState();
+
+ const onChangeOne = (event, selectedDate) => {
+    setPickerOne(false);
+    setProfile({ ...profile,time_from: moment(selectedDate).format("LT") });
+  };
+  const onChangeTwo = (event, selectedDate) => {
+    setPickerTwo(false);
+    setProfile({ ...profile,time_to: moment(selectedDate).format("LT") });
+  };
+
   const getId = async () => {
     try {
       const value = await AsyncStorage.getItem("id");
       return value;
     } catch (e) {
       console.log(e);
+    }
+  };
+
+  const handleDpUpload = async () => {
+    try {
+      await UserPermissions.getCameraPermission();
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5
+      });
+      if (!result.cancelled) {
+        setProfile({...profile,image: result.uri})
+      }
+    } catch (E) {
+      console.log(E);
+    }
+  };
+
+  const handleCoverUpload = async () => {
+    try {
+      await UserPermissions.getCameraPermission();
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5
+      });
+      if (!result.cancelled) {
+        setProfile({...profile,cover_photo: result.uri})
+      }
+    } catch (E) {
+      console.log(E);
     }
   };
 
@@ -45,7 +98,8 @@ const SelfCareProfileEdit = ({ navigation }) => {
         .then(response => response.json())
         .then(result => {
           if(result.status){
-            setProfile(result.data)
+            console.log(result.status)
+            setProfile({...result.data,image:`https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`})
           }
         })
         .catch(error => console.log("error", error));
@@ -111,18 +165,26 @@ const SelfCareProfileEdit = ({ navigation }) => {
             alignItems: "center"
           }}
         >
-          <Image
+          <TouchableOpacity
+          style={{
+            width: 35,
+            height: 35,
+            marginEnd: 20,
+            marginTop: -130,
+            marginBottom: 16,
+            borderColor: "#FFFFFF"
+          }}
+          onPress={handleDpUpload}>
+           <Image
             style={{
               width: 35,
               height: 35,
-              marginEnd: 20,
-              marginTop: -130,
-              marginBottom: 16,
-              borderColor: "#FFFFFF"
             }}
             resizeMode={"contain"}
             source={require("../../assets/13.1-4-6-More/edit_photo.png")}
           />
+          </TouchableOpacity>
+        
 
           <Image
             style={{
@@ -136,7 +198,8 @@ const SelfCareProfileEdit = ({ navigation }) => {
               borderColor: "#FFFFFF"
             }}
             resizeMode={"contain"}
-            source={require("../../assets/13.1-4-6-More/vendor_logo.png")}
+            source={profile.image?{uri:profile.image}:
+              require("../../assets/13.1-4-6-More/vendor_logo.png")}
           />
 
           <TouchableOpacity 
@@ -377,6 +440,7 @@ const SelfCareProfileEdit = ({ navigation }) => {
           placeholder="Enter Street"
           numberOfLines={10}
           multiline={true}
+          textAlignVertical="top"
           value={profile.b_street}
           onChangeText={b_street => setProfile({...profile,b_street})}
         />
@@ -384,6 +448,7 @@ const SelfCareProfileEdit = ({ navigation }) => {
         <Text style={styles.textHeading1}> BUSNIESS ADDRESS </Text>
         <Text style={styles.textLabel}> Description </Text>
         <TextInput
+        textAlignVertical="top"
           style={styles.textArea}
           placeholder="Write something about business..."
           numberOfLines={10}
@@ -404,7 +469,8 @@ const SelfCareProfileEdit = ({ navigation }) => {
 
         <Text style={styles.textHeading1}> BUSNIESS TIME </Text>
         <Text style={styles.textLabel}> FROM </Text>
-        <View
+        <TouchableOpacity
+        onPress={()=>setPickerOne(true)}
           style={[
             {
               width: "94%",
@@ -423,25 +489,26 @@ const SelfCareProfileEdit = ({ navigation }) => {
               width: "94%",
               padding: 10
             }}
+            editable={false}
             placeholder="00:00 AM"
             value={profile.time_from}
             onChangeText={time_from => setProfile({...profile,time_from})}
           />
-          <Text style={{ padding: 10, color: "#999999" }}>
-            <Image
-              style={{
-                width: 20,
-                height: 20,
-                marginTop: 1
-              }}
-              resizeMode={"cover"}
-              source={require("../../assets/13.1-4-6-More/clock_2.png")}
-            />
-          </Text>
-        </View>
+          
+        </TouchableOpacity>
+       {pickerOne && <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="time"
+                //maximumDate={Date.now()}
+                is24Hour={true}
+                display="default"
+                onChange={onChangeOne}
+              />}
 
         <Text style={styles.textLabel}> TO </Text>
-        <View
+        <TouchableOpacity
+        onPress={()=>setPickerTwo(true)}
           style={[
             {
               width: "94%",
@@ -461,44 +528,58 @@ const SelfCareProfileEdit = ({ navigation }) => {
               width: "94%",
               padding: 10
             }}
+            editable={false}
             placeholder="00:00 PM"
             value={profile.time_to}
             onChangeText={time_to => setProfile({...profile,time_to})}
           />
-          <Text style={{ padding: 10, color: "#999999" }}>
-            <Image
-              style={{
-                width: 20,
-                height: 20,
-                marginTop: 1
-              }}
-              resizeMode={"cover"}
-              source={require("../../assets/13.1-4-6-More/clock_2.png")}
-            />
-          </Text>
-        </View>
+          
+        </TouchableOpacity>
+        {pickerTwo && <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="time"
+                //maximumDate={Date.now()}
+                is24Hour={true}
+                display="default"
+                onChange={onChangeTwo}
+              />}
 
         <Text style={styles.textLabel}>Cover Photo</Text>
-        <Image
+       <TouchableOpacity
+       onPress={handleCoverUpload}
+       style={{
+        width: "94%",
+        height: 200,
+        marginTop: 1
+       }}>
+       <Image
           style={{
             width: "94%",
             height: 200,
-            marginTop: 1
           }}
           resizeMode={"cover"}
-          source={require("../../assets/9.4-Service-Add/image_placeholder.png")}
+          source={profile.cover_photo?{uri:profile.cover_photo}:
+            require("../../assets/9.4-Service-Add/image_placeholder.png")}
         />
+       </TouchableOpacity>
 
         <Text style={styles.textHeading1}> SERVICE ALLOWED </Text>
         <Text style={styles.textLabel}> Gender </Text>
 
         <View style={styles.rawContainer}>
           <View style={styles.checkboxContainer}>
-            <CheckBox style={styles.checkbox} />
+            <CheckBox style={styles.checkbox}
+            value={profile.gender === 'Male'?true:false} 
+            onChange={()=>setProfile({...profile,gender:'Male'})}
+            />
             <Text style={styles.label}> Male</Text>
           </View>
           <View style={styles.checkboxContainer}>
-            <CheckBox style={styles.checkbox} />
+            <CheckBox style={styles.checkbox} 
+            value={profile.gender === 'Female'?true:false} 
+             onChange={()=>setProfile({...profile,gender:'Female'})}
+            />
             <Text style={styles.label}> Female</Text>
           </View>
         </View>

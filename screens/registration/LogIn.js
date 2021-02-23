@@ -9,12 +9,15 @@ import {
   Button,
   TouchableOpacity,
   Image,
-  ImageBackground
+  ImageBackground,
+  ToastAndroid
 } from "react-native";
 import axios from "axios";
 import FormData from "form-data";
 import ProgressDialog from "react-native-progress-dialog";
 import AsyncStorage from "@react-native-community/async-storage";
+import * as Google from "expo-google-app-auth";
+import * as Facebook from "expo-facebook";
 
 class Login extends React.Component {
   constructor(props) {
@@ -23,11 +26,59 @@ class Login extends React.Component {
       isLogin: false,
       email: "",
       password: "",
-      wait: false
+      wait: false,
+      user: null
     };
   }
 
-  componentDidMount() {}
+  signInAsync = async () => {
+    const result = await Google.logInAsync({
+      androidClientId:
+        "766262472004-8ucj60k0gsanfmjm5snjhfdu3b9qi2a4.apps.googleusercontent.com",
+      scopes: ["profile", "email"],
+      androidStandaloneAppClientId:
+        "766262472004-8ucj60k0gsanfmjm5snjhfdu3b9qi2a4.apps.googleusercontent.com"
+    });
+
+    if (result.type === "success") {
+      console.log("USER_INFO", result.user);
+      const user = {
+        email: result.user.email,
+        name: result.user.name,
+        google_id: result.user.id,
+        fb_id: "",
+        type: "gmail"
+      };
+
+      var formdata = new FormData();
+        formdata.append("fb_id", "");
+        formdata.append("social_type", "gmail");
+        formdata.append("gmail_id", "106104419216762923154");
+        formdata.append("role", "2");
+
+        var requestOptions = {
+          method: "POST",
+          body: formdata,
+          redirect: "follow"
+        };
+
+        fetch("https://xionex.in/CarCare/api/v1/social-login", requestOptions)
+          .then(response => response.json())
+          .then(result => {
+            console.log(result)
+            if(result.status){
+              this.storeData(result.data.id, result.data.vertical);
+            }else {
+              this.props.navigation.navigate("SignUp", {
+                social: true,
+                user: user
+              });
+            }
+          })
+          .catch(error => console.log("error", error));
+    }
+  };
+
   storeData = async (id, vertical) => {
     try {
       await AsyncStorage.setItem("id", String(id));
@@ -45,32 +96,106 @@ class Login extends React.Component {
     }
   };
 
+  validateEmail = email => {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+      return true;
+    }
+    return false;
+  };
+
   handleSubmit = () => {
-    this.setState({ wait: true });
-    var formdata = new FormData();
-    formdata.append("email", "kpvendor@gmail.com");
-    formdata.append("password", "123456");
+    const { email, password } = this.state;
+    if (!email.length) {
+      alert("Email Empty.");
+    } else if (!this.validateEmail(email)) {
+      alert("Invalid Email Format.");
+    } else if (!password.length) {
+      alert("Password Empty.");
+    } else if (password.length < 6) {
+      alert("Password must be of 6 characters.");
+    } else {
+      this.setState({ wait: true });
+      var formdata = new FormData();
+      formdata.append("email", email);
+      formdata.append("password", password);
 
-    var requestOptions = {
-      method: "POST",
-      body: formdata,
-      redirect: "follow"
-    };
+      var requestOptions = {
+        method: "POST",
+        body: formdata,
+        redirect: "follow"
+      };
 
-    fetch("https://xionex.in/CarCare/api/v1/login", requestOptions)
-      .then(response => response.json())
-      .then(result => {
-        if (result.status)
-        {
-          console.log(result.data)
-          this.storeData(result.data.id, result.data.vertical)
-        }
-      })
-      .catch(error => {
-        console.log("error", error);
-        alert("Something went wrong");
-        this.setState({ wait: false });
+      fetch("https://xionex.in/CarCare/api/v1/login", requestOptions)
+        .then(response => response.json())
+        .then(result => {
+          console.log(result);
+          if (result.status) {
+            this.storeData(result.data.id, result.data.vertical);
+          }else{
+            ToastAndroid.show('Invalid Credentials',3000)
+            this.setState({ wait: false });
+          }
+        })
+        .catch(error => {
+          console.log("error", error);
+          alert("Something went wrong");
+          this.setState({ wait: false });
+        });
+    }
+  };
+
+  signInWithFb = async () => {
+    try {
+      await Facebook.initializeAsync("842471036316892", "Self care");
+      const result = await Facebook.logInWithReadPermissionsAsync({
+        permissions: ["public_profile", "email"]
       });
+
+      if (result.type === "success") {
+        
+        const response = await fetch(
+          `https://graph.facebook.com/me?fields=id,name,email,birthday&access_token=${result.token}`
+        );
+
+        const res = await response.json();
+       
+        const user = {
+          email: res.email,
+          name: res.name,
+          google_id: "",
+          fb_id: res.id,
+          type: "facebook"
+        };
+
+        var formdata = new FormData();
+        formdata.append("fb_id", user.fb_id);
+        formdata.append("social_type", user.type);
+        formdata.append("google_id", user.google_id);
+        formdata.append("role", "2");
+
+        var requestOptions = {
+          method: "POST",
+          body: formdata,
+          redirect: "follow"
+        };
+
+        fetch("https://xionex.in/CarCare/api/v1/social-login", requestOptions)
+          .then(response => response.json())
+          .then(result => {
+            if(result.status){
+              this.storeData(result.data.id, result.data.vertical);
+            }else {
+              this.props.navigation.navigate("SignUp", {
+                social: true,
+                user: user
+              });
+            }
+          })
+          .catch(error => console.log("error", error));
+      }
+    } catch ({ message }) {
+      alert(`Facebook Login Error: ${message}`);
+    }
   };
 
   render() {
@@ -132,7 +257,10 @@ class Login extends React.Component {
 
             <View style={styles.buttonContainer}>
               <View style={styles.socialButtonContainer}>
-                <TouchableOpacity style={styles.centerAlign}>
+                <TouchableOpacity
+                  onPress={this.signInWithFb}
+                  style={styles.centerAlign}
+                >
                   <Image
                     style={styles.socialIcon}
                     source={require("../../assets/2-Login/fb.png")}
@@ -149,7 +277,10 @@ class Login extends React.Component {
                   { backgroundColor: "#FFFFFF" }
                 ]}
               >
-                <TouchableOpacity style={styles.centerAlign}>
+                <TouchableOpacity
+                  onPress={this.signInAsync}
+                  style={styles.centerAlign}
+                >
                   <Image
                     style={styles.socialIcon}
                     source={require("../../assets/2-Login/goolge.png")}

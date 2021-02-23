@@ -13,13 +13,14 @@ import {
   Image,
   Rating,
   AirbnbRating,
-  ImageBackground
+  ImageBackground,
+  ToastAndroid
 } from "react-native";
 
 const SelfCareServiceDetails = ({ route, navigation }) => {
   const [item, setItem] = React.useState({});
   const { ID, USER_ID } = route.params;
-
+  
   React.useEffect(() => {
     var formdata = new FormData();
     formdata.append("user_id", USER_ID);
@@ -38,6 +39,7 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
       .then(response => response.json())
       .then(result => {
         if (result.status) {
+          console.log(result.data)
           setItem(result.data);
         }
       })
@@ -62,7 +64,7 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
       .then(response => response.json())
       .then(result => {
         if (result.status) {
-          alert(result.message);
+          ToastAndroid.show(result.message,2000);
           navigation.goBack()
         }
       })
@@ -82,7 +84,8 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
                 marginEnd: 2
               }}
               resizeMode={"cover"}
-              source={require("../../assets/car_service_banner.png")}
+              source={{uri:`https://xionex.in/CarCare/public/vendor/upload/${item.image}`}}
+             
             />
           </View>
           <View style={styles.off}>
@@ -108,7 +111,7 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
           }}
         >
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.name}</Text>
-          <Image
+          {/* <Image
             style={{
               width: 70,
               height: 18,
@@ -116,7 +119,7 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
             }}
             resizeMode={"cover"}
             source={require("../../assets/home_service.png")}
-          />
+          /> */}
         </View>
 
         <View
@@ -181,7 +184,6 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
                   edit: true,
                   item: item
                 })
-              // navigation.goback()
             }
             style={{
               width: "49%",

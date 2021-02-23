@@ -1,7 +1,10 @@
-import React from "react";
+import React, {useState,useEffect} from "react";
 import { Image } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
+import AsyncStorage from '@react-native-community/async-storage';
+
+import Loading from './Loading';
 
 // screens
 import Home from "../screens/Main";
@@ -34,9 +37,6 @@ import CarCareProfileEdit from "../screens/carCare/CarCareProfileEdit";
 import CarCareServiceList from "../screens/carCare/CarCareServiceList";
 import CarServicekp from "../screens/carCare/CarServicekp";
 import ServicePrductBooking from "../screens/carCare/ServicePrductBooking";
-
-import AsyncStorage from "@react-native-community/async-storage";
-
 import { Images } from "../constants";
 
 const Stack = createStackNavigator();
@@ -97,11 +97,14 @@ function HomeStack(props) {
 
 function EmpAvailityStack(props) {
   return (
-    <Stack.Navigator mode="card" headerMode="screen">
+    <Stack.Navigator mode="card" 
+    //headerMode="screen"
+    >
       <Stack.Screen
         name="EmpAvaility"
         component={EmpAvaility}
         options={{
+          headerLeft: null,
           title: "EmpAvaility",
           headerRight: () => (
             <Image
@@ -118,8 +121,9 @@ function EmpAvailityStack(props) {
 }
 
 function AppStack(props) {
+  
   return (
-    <Drawer.Navigator initialRouteName="Home">
+    <Drawer.Navigator >
       <Drawer.Screen name="Home" component={HomeStack} />
       <Drawer.Screen name="EmpAvaility" component={EmpAvailityStack} />
     </Drawer.Navigator>
@@ -127,8 +131,17 @@ function AppStack(props) {
 }
 
 export default function LoginStack(props) {
+  
+
   return (
-    <Stack.Navigator mode="card">
+    <Stack.Navigator mode="card" >
+       <Stack.Screen
+        name="Loading"
+        component={Loading}
+        options={{
+          headerShown: false
+        }}
+      />
       <Stack.Screen
         name="Login"
         component={Login}
@@ -196,6 +209,7 @@ export default function LoginStack(props) {
         name="CarProductDetails"
         component={CarCareProductDetails}
       />
+    
       <Stack.Screen name="GenerateOfferCode" component={GenerateOfferCode} />
       <Stack.Screen name="NotificationStack" component={Notification} />
       <Stack.Screen

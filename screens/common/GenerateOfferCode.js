@@ -22,6 +22,8 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { createStackNavigator } from "@react-navigation/stack";
 import AsyncStorage from "@react-native-community/async-storage";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import moment from "moment";
 
 class GenerateOfferCode extends React.Component {
   state = {
@@ -30,7 +32,14 @@ class GenerateOfferCode extends React.Component {
     discount: "",
     no_of_user: "",
     validity: "",
-    offer_id: ""
+    offer_id: "",
+    date: Date.now(),
+    show: false
+  };
+
+  onChange = (event, selectedDate) => {
+    this.setState({ show: false });
+    this.setState({ validity: moment(selectedDate).format("L") });
   };
 
   getId = async () => {
@@ -42,7 +51,7 @@ class GenerateOfferCode extends React.Component {
     }
   };
   componentDidMount() {
-    if (this.props.route.params.edit) {
+    if (this.props.route.params?.edit) {
       const { item } = this.props.route.params;
       this.setState({
         user_id: item.user_id,
@@ -66,7 +75,7 @@ class GenerateOfferCode extends React.Component {
     } = this.state;
 
     if (user_id && code && discount && no_of_user && validity) {
-      if (this.props.route.params.edit) {
+      if (this.props.route.params?.edit) {
         var formdata = new FormData();
         formdata.append("user_id", user_id);
         formdata.append("code", code);
@@ -185,6 +194,7 @@ class GenerateOfferCode extends React.Component {
             }}
             placeholder="Enter Discount"
             value={this.state.discount}
+            keyboardType="number-pad"
             onChangeText={text => this.setState({ discount: text })}
           />
 
@@ -205,6 +215,7 @@ class GenerateOfferCode extends React.Component {
             style={styles.textInput}
             placeholder="Enter No. of User"
             value={this.state.no_of_user}
+            keyboardType="number-pad"
             onChangeText={text => this.setState({ no_of_user: text })}
           />
 
@@ -219,14 +230,35 @@ class GenerateOfferCode extends React.Component {
               width: "94%"
             }}
           >
-            Velidy
+            Validity
           </Text>
-          <TextInput
-            style={styles.textInput}
-            placeholder="DD/MM/YYYY"
-            value={this.state.validity}
-            onChangeText={text => this.setState({ validity: text })}
-          />
+         
+
+          
+         
+            <TouchableOpacity
+              style={styles.textInput}
+              onPress={() => this.setState({ show: true })}
+            >
+              <TextInput
+                placeholder="DD/MM/YYYY"
+                value={this.state.validity}
+                editable={false}
+              />
+            </TouchableOpacity>
+
+            {this.state.show && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={this.state.date}
+                mode="date"
+                //maximumDate={Date.now()}
+                is24Hour={true}
+                display="default"
+                onChange={this.onChange}
+              />
+            )}
+          
 
           <View
             style={[

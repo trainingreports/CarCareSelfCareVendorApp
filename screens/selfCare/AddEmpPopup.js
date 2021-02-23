@@ -2,20 +2,14 @@ import React from 'react';
 import SkyLight from 'react-skylight';
 import { StatusBar } from 'expo-status-bar';
 import {
-  ScrollView, ImageBackground,
-  Button,
+  ScrollView,
   StyleSheet,
   Text,
-  CheckBox,
   TextInput,
   TouchableOpacity,
   View,
   Image
 } from 'react-native';
-import { StackNavigator } from '@react-navigation/native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-
 
 class Example extends React.Component {
   constructor(props){
@@ -25,12 +19,10 @@ class Example extends React.Component {
   render() {
 
     return (
-      <div>
-        <section>
-          <h1>Add Employee</h1>
-          <button onClick={() => this.simpleDialog.show()}>Add</button>
-        </section>
-        <SkyLight hideOnOverlayClicked ref={ref => this.simpleDialog = ref} title="">
+     <View style={{flex:1}}>
+       <Text>Okkk</Text>
+  
+        
           <ScrollView>
             <View style={styles.container}>
               <Text style={styles.textHeading}>Add Employee </Text>
@@ -46,7 +38,7 @@ class Example extends React.Component {
                     height: 200,
                   }}
                   resizeMode={'contain'}
-                  source={require('../../assets/13.8-Add-Emp-Availity-Form/add_photo.png')}
+                  source={require('../../assets/splash.png')}
                 />
               </View>
               
@@ -82,13 +74,10 @@ class Example extends React.Component {
               <StatusBar style="auto" />
             </View>
           </ScrollView>
-        </SkyLight>
-      </div>
+        </View>
     )
   }
 }
-
-Example.displayName = 'Example';
 
 export default Example;
 

@@ -15,10 +15,12 @@ import {
   Image,
   Rating,
   AirbnbRating,
-  Picker
+  Picker,
+  ToastAndroid
 } from "react-native";
 import axios from "axios";
 import FormData from "form-data";
+import ProgressDialog from "react-native-progress-dialog";
 
 class App extends React.Component {
   constructor(props) {
@@ -35,15 +37,53 @@ class App extends React.Component {
       cr_number: "",
       city: "",
       country: "",
-      password: ""
+      password: "",
+      categoryList: [],
+      subCategoryList: [],
+      wait: false,
+      google_id: "",
+      fb_id: "",
+      type: ""
     };
+  }
+  componentDidMount() {
+    if (this.props.route.params?.social) {
+      const {
+        email,
+        name,
+        google_id,
+        fb_id,
+        type
+      } = this.props.route.params.user;
+      this.setState({
+        name: name,
+        email: email,
+        google_id: google_id,
+        fb_id: fb_id,
+        type: type
+      });
+    }
+
+    var requestOptions = {
+      method: "GET",
+      redirect: "follow"
+    };
+
+    fetch("https://xionex.in/CarCare/api/v1/clinic-type", requestOptions)
+      .then(response => response.json())
+      .then(result => {
+        if (result.status) {
+          this.setState({ categoryList: result.data });
+        }
+      })
+      .catch(error => console.log("error", error));
   }
   storeData = async respone => {
     try {
       await AsyncStorage.setItem("id", String(respone));
       this.props.navigation.navigate("App");
     } catch (e) {
-      Alert.alert("Something went wrong");
+      alert("Something went wrong");
     }
   };
   submitHandle = () => {
@@ -59,28 +99,35 @@ class App extends React.Component {
       cr_number,
       city,
       country,
-      password
+      password,
+      google_id,
+      fb_id,
+      type
     } = this.state;
-    if (this.state.name == "") {
-      //this.state.name.error = "please ender the name";
-      alert("please ender the name");
-    } else if (this.state.businessName == "") {
-      alert("please ender the business name");
-    } else if (this.state.email == "") {
-      alert("please ender the email");
-    } else if (this.state.mobileNumber == "") {
-      alert("please ender the mobileNumber");
-    } else if (this.state.vertical == "") {
-      alert("please ender the vertical");
-    } else if (this.state.cr_number == "") {
-      alert("please ender the cr_number");
-    } else if (this.state.city == "") {
-      alert("please ender the city");
-    } else if (this.state.country == "") {
-      alert("please ender the country");
-    } else if (this.state.password == "") {
-      alert("please ender the password");
+    if (name === "") {
+      alert("please enter the name");
+    } else if (businessName === "") {
+      alert("please enter the business name");
+    } else if (email === "") {
+      alert("please enter the email");
+    } else if (mobileNumber === "") {
+      alert("please enter the mobileNumber");
+    } else if (vertical === "") {
+      alert("please enter the vertical");
+    } else if (category === "") {
+      alert("please enter the Category");
+    } else if (subCategory === "") {
+      alert("please enter the Subcategory");
+    } else if (cr_number === "") {
+      alert("please enter the cr_number");
+    } else if (city === "") {
+      alert("please enter the city");
+    } else if (country === "") {
+      alert("please enter the country");
+    } else if (password === "") {
+      alert("please enter the password");
     } else {
+      this.setState({ wait: true });
       var formdata = new FormData();
       formdata.append("name", name);
       formdata.append("business", businessName);
@@ -94,6 +141,9 @@ class App extends React.Component {
       formdata.append("city", city);
       formdata.append("country", country);
       formdata.append("password", password);
+      formdata.append("fb_id", fb_id);
+      formdata.append("gmail_id", google_id);
+      formdata.append("social_type", type);
 
       var requestOptions = {
         method: "POST",
@@ -104,19 +154,26 @@ class App extends React.Component {
       fetch("https://xionex.in/CarCare/api/v1/sign-up", requestOptions)
         .then(response => response.json())
         .then(result => {
+          console.log(result);
           if (result.status) {
-            alert(result.message);
+            this.setState({ wait: false });
+            ToastAndroid.show(result.message, 2000);
+            this.props.navigation.navigate("Login");
           } else {
+            this.setState({ wait: false });
             alert(result.message);
           }
         })
-        .catch(error => console.log("error", error));
+        .catch(error => {
+          this.setState({ wait: false });
+          console.log("error", error);
+        });
     }
   };
 
   render() {
     const navigation = this.props.navigation;
-    //const [selectedValue, setSelectedValue] = useState("java");
+
     return (
       <ImageBackground
         style={{
@@ -128,11 +185,13 @@ class App extends React.Component {
       >
         <ScrollView>
           <View style={styles.container}>
+            <ProgressDialog visible={this.state.wait} />
             <Text style={styles.textHeading}> Sign Up </Text>
             <Text style={styles.textLabel}> Name </Text>
             <TextInput
               style={styles.textInput}
               placeholder="Enter Name"
+              value={this.state.name}
               onChangeText={text => this.setState({ name: text })}
             />
             <Text style={styles.textLabel}> Business Name </Text>
@@ -145,6 +204,7 @@ class App extends React.Component {
             <TextInput
               style={styles.textInput}
               placeholder="Enter Email"
+              value={this.state.email}
               onChangeText={text => this.setState({ email: text })}
             />
             <Text style={styles.textLabel}> Mobile Number </Text>
@@ -207,16 +267,41 @@ class App extends React.Component {
                 style={{ height: 36 }}
                 mode="dropdown"
                 selectedValue={this.state.category}
-                onValueChange={(itemValue, itemIndex) =>
-                  this.setState({ category: itemValue })
-                }
+                onValueChange={(itemValue, itemIndex) => {
+                  this.setState({ category: itemValue });
+                  var formdata = new FormData();
+                  formdata.append("clinic_id", itemValue);
+
+                  var requestOptions = {
+                    method: "POST",
+                    body: formdata,
+                    redirect: "follow"
+                  };
+
+                  fetch(
+                    "https://xionex.in/CarCare/api/v1/sub-category",
+                    requestOptions
+                  )
+                    .then(response => response.json())
+                    .then(result => {
+                      if (result.status) {
+                        this.setState({ subCategoryList: result.data });
+                      }
+                    })
+                    .catch(error => console.log("error", error));
+                }}
               >
-                <Picker.Item
-                  label="Select Category"
-                  color="#B3B3B3"
-                  fontSize="10"
-                  value="Select Category"
-                />
+                {this.state.categoryList.map((item, i) => {
+                  return (
+                    <Picker.Item
+                      key={i}
+                      label={item.title}
+                      color="#B3B3B3"
+                      fontSize="10"
+                      value={item.id}
+                    />
+                  );
+                })}
               </Picker>
             </View>
 
@@ -238,12 +323,17 @@ class App extends React.Component {
                   this.setState({ subCategory: itemValue })
                 }
               >
-                <Picker.Item
-                  label="Select"
-                  color="#B3B3B3"
-                  fontSize="10"
-                  value="Select SubCategory"
-                />
+                {this.state.subCategoryList.map((item, i) => {
+                  return (
+                    <Picker.Item
+                      key={i}
+                      label={item.title}
+                      color="#B3B3B3"
+                      fontSize="10"
+                      value={item.id}
+                    />
+                  );
+                })}
               </Picker>
             </View>
 

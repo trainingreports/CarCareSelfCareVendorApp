@@ -10,6 +10,7 @@ import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import ServicePage from '../profilePages/ServicePage';
 import AboutUsPage from '../profilePages/AboutUsPage';
 import ReviewsPage from '../profilePages/ReviewsPage';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const Stack = createStackNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -17,8 +18,47 @@ const Tab = createMaterialTopTabNavigator();
 // function TabStack(navigation) {
 
 class TabStack extends React.Component {
+  state={
+    profile:{}
+  }
+
+  getId = async () => {
+    try {
+      const value = await AsyncStorage.getItem("id");
+      return value;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  componentDidMount(){
+    this.getId().then(id => {
+      var formdata = new FormData();
+      formdata.append("user_id", id);
+
+      var requestOptions = {
+        method: "POST",
+        body: formdata,
+        redirect: "follow"
+      };
+
+      fetch(
+        "https://xionex.in/CarCare/api/v1/get-business-info",
+        requestOptions
+      )
+        .then(response => response.json())
+        .then(result => {
+          if(result.status){
+            console.log(result.data)
+            this.setState({profile:result.data})
+          }
+        })
+        .catch(error => console.log("error", error));
+    });
+  }
   render() {
     const navigation = this.props.navigation;
+    const {profile} = this.state;
+
     return (
       <NavigationContainer independent={true}>
 
@@ -30,7 +70,8 @@ class TabStack extends React.Component {
                 height: 200,
               }}
               resizeMode={'cover'}
-              source={require('../../assets/13.2-3-5-Car-Service-Profile/service_pic001.png')}
+              source={profile.image?{uri:profile.image}:
+              require('../../assets/13.2-3-5-Car-Service-Profile/service_pic001.png')}
             />
 
             <View style={{
@@ -38,7 +79,7 @@ class TabStack extends React.Component {
               flexDirection: 'row',
               marginTop: -30,
             }}>
-              <Text style={{ width: '70%', color: '#FFFFFF', marginStart: 12 }}>10:00 AM - 6:00 MP</Text>
+              <Text style={{ width: '70%', color: '#FFFFFF', marginStart: 12 }}>{profile.time_from} - {profile.time_to}</Text>
               <Text style={{ color: '#FFFFFF', fontSize: 12, borderRadius: 2, paddingStart: 4, paddingEnd: 4, backgroundColor: '#FF3B30' }}>Male</Text>
               <Text style={{ color: '#FFFFFF', fontSize: 12, borderRadius: 2, paddingStart: 4, paddingEnd: 4, backgroundColor: '#8CC63F', marginStart: 4 }}>Female</Text>
             </View>
@@ -56,12 +97,13 @@ class TabStack extends React.Component {
                   marginTop: 4
                 }}
                 resizeMode={'cover'}
-                source={require('../../assets/13.1-4-6-More/vendor_logo.png')}
+                source={profile.image?{uri:profile.image}:
+                  require('../../assets/13.1-4-6-More/vendor_logo.png')}
               />
               <View style={{ width: '90%', marginStart: 10 }}>
-                <Text style={{ fontSize: 18 }}>Car Wash Center</Text>
+                <Text style={{ fontSize: 18 }}>{profile.name}</Text>
                 <View style={{ width: '90%', flexDirection: 'row' }}>
-                  <Text style={{ width: '88%', fontSize: 16, color: '#999999' }}>Dubai- UAE</Text>
+                  <Text style={{ width: '88%', fontSize: 16, color: '#999999' }}>{profile.city}- {profile.country}</Text>
                   <Image
                     style={{
                       width: 18,
@@ -113,7 +155,7 @@ class TabStack extends React.Component {
               }} />
             <Tab.Screen
               name="AboutUsPage"
-              component={AboutUsPage}
+              children={()=><AboutUsPage profile={profile}/>}
               options={{
                 tabBarLabel: 'ABOUT US',
                 // tabBarIcon: ({ color, size }) => (

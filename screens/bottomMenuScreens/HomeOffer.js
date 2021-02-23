@@ -44,7 +44,12 @@ function HomeOffer({ navigation }) {
     });
   };
   useEffect(() => {
-    getData();
+    const unsubscribe = navigation.addListener('focus', () => {
+      getData();
+    });
+
+    return unsubscribe;
+    
   }, [navigation]);
 
   const renderItem = ({ item }) => {

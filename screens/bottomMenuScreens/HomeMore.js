@@ -6,12 +6,83 @@ import {
   Text,
   Image,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  ToastAndroid
 } from "react-native";
+import AsyncStorage from '@react-native-community/async-storage';
 
 class HomeMain extends React.Component {
+  state={
+    role:false,
+    profile:{}
+  }
+
+  getId = async () => {
+    try {
+      const value = await AsyncStorage.getItem("id");
+      return value;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  deleteData = async () => {
+    try {
+      await AsyncStorage.removeItem('id',this.logout)
+    } catch (e) {
+      alert('err')
+      console.log('Logout Error:'+e)
+    }
+  }
+  logout=()=>{
+        ToastAndroid.show('Logged Out',2000)
+        this.props.navigation.navigate('Login')
+  }
+  getRole = async () => {
+    try {
+      const value = await AsyncStorage.getItem("self");
+      return value;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  componentDidMount(){
+    this.getRole().then(role => {
+      if (role === "true") {
+        this.setState({role:true})
+      } else {
+        this.setState({role:false})
+      }
+    });
+    this.getId().then(id => {
+      var formdata = new FormData();
+      formdata.append("user_id", id);
+
+      var requestOptions = {
+        method: "POST",
+        body: formdata,
+        redirect: "follow"
+      };
+
+      fetch(
+        "https://xionex.in/CarCare/api/v1/get-business-info",
+        requestOptions
+      )
+        .then(response => response.json())
+        .then(result => {
+          if(result.status){
+            console.log(result.data)
+            this.setState({profile:result.data})
+          }
+        })
+        .catch(error => console.log("error", error));
+    });
+  }
+
   render() {
     const navigation = this.props.navigation;
+    const {profile} = this.state
     return (
       <ScrollView>
         <View style={styles.container}>
@@ -34,7 +105,8 @@ class HomeMain extends React.Component {
               borderColor: "#FFFFFF"
             }}
             resizeMode={"contain"}
-            source={require("../../assets/13.1-4-6-More/vendor_logo.png")}
+            source={profile.image?{uri:profile.image}:
+              require("../../assets/13.1-4-6-More/vendor_logo.png")}
           />
 
           <View style={styles.rawContainer}>
@@ -47,7 +119,7 @@ class HomeMain extends React.Component {
                 justifyContent: "center"
               }}
             >
-              Car Wash
+             {profile?.name}
             </Text>
 
             <Text
@@ -70,7 +142,7 @@ class HomeMain extends React.Component {
               justifyContent: "center"
             }}
           >
-            Dubai - UAE
+            {profile?.city} - {profile?.country}
           </Text>
           <View style={styles.rawContainer}>
             <Text
@@ -82,7 +154,7 @@ class HomeMain extends React.Component {
                 justifyContent: "center"
               }}
             >
-              carwash@gmail.com
+             {profile?.email}
             </Text>
 
             <Text
@@ -139,10 +211,12 @@ class HomeMain extends React.Component {
             />
             <TouchableOpacity
               onPress={() =>
-                this.props.navigation.navigate("App", { screen: "EmpAvaility" })
+                this.props.navigation.navigate("EmpAvaility",{carCare:this.state.role})
               }
             >
-              <Text style={styles.label}>Add Employee & Availability</Text>
+              <Text style={styles.label}>{
+                this.state.role?'Add Employee & Availability':'Add Availability'
+              }</Text>
             </TouchableOpacity>
           </View>
 
@@ -268,7 +342,7 @@ class HomeMain extends React.Component {
             />
             <TouchableOpacity
               style={styles.label}
-              onPress={() => navigation.navigate("Login")}
+              onPress={this.deleteData}
             >
               <Text style={styles.label}>Sign Out</Text>
             </TouchableOpacity>
@@ -385,10 +459,10 @@ const styles = StyleSheet.create({
     marginEnd: 16
   },
   label: {
-    width: "90%",
+    width:'auto',
     fontSize: 18,
     color: "#4D4D4D",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   view: {
     width: "90%",

@@ -8,13 +8,14 @@ import {
   Image,
   FlatList,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  ToastAndroid
 } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
 
 class HomeSelfCareService extends React.Component {
   state = {
-    serviceData: [],
+    data: [],
     user_id: ""
   };
 
@@ -27,7 +28,7 @@ class HomeSelfCareService extends React.Component {
     }
   };
 
-  getData() {
+  getData = () => {
     this.getRole().then(id => {
       this.setState({ user_id: id });
       var formdata = new FormData();
@@ -43,7 +44,7 @@ class HomeSelfCareService extends React.Component {
         .then(response => response.json())
         .then(result => {
           if (result.status) {
-            this.setState({ serviceData: result.data });
+           this.setState({ data: result.data });
           }
         })
         .catch(error => console.log("error", error));
@@ -52,9 +53,15 @@ class HomeSelfCareService extends React.Component {
 
   componentDidMount() {
     this.getData();
+    const didFocusSubscription = this.props.navigation.addListener(
+      "focus",
+      () => {
+        this.getData();
+      }
+    );
   }
 
-  renderItem = ({ item }) => {
+  renderItem = ({item}) => {
     const navigation = this.props.navigation;
     const deleteItem = () => {
       var formdata = new FormData();
@@ -75,17 +82,18 @@ class HomeSelfCareService extends React.Component {
         .then(result => {
           if (result.status) {
             this.getData();
-            alert(result.message);
+            ToastAndroid.show(result.message,2000);
           }
         })
-        .catch(error => console.log("error", error));
+        .catch(error => console.log("error====>", error));
     };
     return (
       <TouchableOpacity
         onPress={() => {
           navigation.navigate("SelfCareServiceDetails", {
             ID: item.id,
-            USER_ID: this.state.user_id
+            USER_ID: this.state.user_id,
+            items:item
           });
         }}
       >
@@ -94,10 +102,13 @@ class HomeSelfCareService extends React.Component {
             <Image
               style={{
                 width: 108,
-                height: 108
+                height: 108,
+                marginLeft:15,
+                borderRadius:5
               }}
               resizeMode={"cover"}
-              source={require("../../assets/self_service_pic_2.png")}
+              source={{uri:`https://xionex.in/CarCare/public/vendor/upload/${item.image}`}}
+            
             />
             <View style={{ width: "76%", marginStart: 10, marginEnd: 10 }}>
               <View style={styles.buttonContainer}>
@@ -109,7 +120,8 @@ class HomeSelfCareService extends React.Component {
                   onPress={() =>
                     navigation.navigate("SelfCareServiceDetails", {
                       ID: item.id,
-                      USER_ID: this.state.user_id
+                      USER_ID: this.state.user_id,
+                      items:item
                     })
                   }
                 >
@@ -198,18 +210,16 @@ class HomeSelfCareService extends React.Component {
               borderBottomWidth: 1
             }}
           />
-          <SafeAreaView style={styles.containerList}>
+        
             <FlatList
-              data={this.state.serviceData}
+              data={this.state.data}
               renderItem={this.renderItem}
               keyExtractor={item => item.id}
               ListEmptyComponent={() => (
                 <Text style={{ textAlign: "center" }}>NO DATA YET</Text>
               )}
-              refreshing={true}
-              onRefresh={this.getData()}
             />
-          </SafeAreaView>
+        
         </View>
       </ScrollView>
     );
@@ -231,7 +241,7 @@ const styles = StyleSheet.create({
     height: 58
   },
   buttonContainer: {
-    width: "100%",
+    width: "92%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center"

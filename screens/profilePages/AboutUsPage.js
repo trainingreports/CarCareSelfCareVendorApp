@@ -2,15 +2,54 @@
 // https://aboutreact.com/react-native-tab //
 import * as React from 'react';
 import { TouchableOpacity, StyleSheet, View, Text, SafeAreaView, Image } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
-const AboutUsPage = ({ navigation }) => {
+const AboutUsPage = ({ route,navigation }) => {
+  const [profile,setProfile] = React.useState({});
+
+  const getId = async () => {
+    try {
+      const value = await AsyncStorage.getItem("id");
+      return value;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  
+  React.useEffect(()=>{
+    getId().then(id => {
+      var formdata = new FormData();
+      formdata.append("user_id", id);
+
+      var requestOptions = {
+        method: "POST",
+        body: formdata,
+        redirect: "follow"
+      };
+
+      fetch(
+        "https://xionex.in/CarCare/api/v1/get-business-info",
+        requestOptions
+      )
+        .then(response => response.json())
+        .then(result => {
+          if(result.status){
+            console.log('kjablkd=======>',result.data)
+           setProfile(result.data)
+          }
+        })
+        .catch(error => console.log("error", error));
+    });
+  },[])
   return (
     <View style={styles.container}>
       <Text style={{ width: '90%', marginTop:16, color: '#999999', fontWeight: 'bold' }}>DESCRIPTION</Text>
       
       <View style={styles.view} />
       
-      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the 15th century who is thought to have scrambled parts of Cicero's De Finibus Bonorum et Malorum for use in a type specimen book.</Text>
+      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>
+        {profile.description}
+      </Text>
       
       <View style={styles.view} />
       
@@ -19,10 +58,10 @@ const AboutUsPage = ({ navigation }) => {
       <View style={styles.view} />
 
       <Text style={{ width: '90%', color: '#999999', fontSize:13 }}>CALL</Text>
-      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>+91 3426768347834</Text>
+      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>{profile.phone}</Text>
       
       <Text style={{ width: '90%', color: '#999999', fontSize:13, marginTop:4 }}>EMAIL</Text>
-      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>test@gmail.com</Text>
+      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>{profile.email}</Text>
       
       <View style={styles.view} />
       
@@ -30,7 +69,9 @@ const AboutUsPage = ({ navigation }) => {
       
       <View style={styles.view} />
 
-      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>Lorem ipsum, or lipsum as it is sometimes known.</Text>
+      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>{profile.b_street}</Text>
+      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>{profile.b_city}</Text>
+      <Text style={{ width: '90%', color: '#666666', fontSize:13 }}>{profile.b_state}</Text>
       
       <View style={styles.view} />
       

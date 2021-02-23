@@ -25,6 +25,7 @@ const DATA = [
 
 
 const ItemService = ({ title }) => (
+  
   <View style={styles.item}>
 
     <View style={styles.buttonContainer}>
@@ -51,6 +52,40 @@ const ItemService = ({ title }) => (
 );
 
 const ServicePage = ({ navigation }) => {
+  const [services,setServices] = React.useState([]);
+
+  const getId = async () => {
+    try {
+      const value = await AsyncStorage.getItem("id");
+      return value;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  
+  React.useEffect(()=>{
+    getId().then(id => {
+      var formdata = new FormData();
+      formdata.append("user_id", id);
+      
+      var requestOptions = {
+        method: 'POST',
+        body: formdata,
+        redirect: 'follow'
+      };
+      
+      fetch("https://xionex.in/CarCare/api/v1/my-self-service", requestOptions)
+        .then(response => response.json())
+        .then(result =>{
+          if(result.status){
+            setServices(result.data)
+          }else{
+
+          }
+        })
+        .catch(error => console.log('error', error));
+    });
+  },[])
   const renderItem = ({ item }) => (
     <ItemService title={item.title} />
   );
@@ -58,9 +93,12 @@ const ServicePage = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.containerList}>
       <FlatList
-        data={DATA}
+        data={services}
         renderItem={renderItem}
         keyExtractor={item => item.id}
+        ListEmptyComponent={()=><Text style={{
+          alignSelf:'center',marginTop:10
+        }}>No Services Yet</Text>}
       />
     </SafeAreaView>
     // <SafeAreaView style={{ flex: 1 }}>

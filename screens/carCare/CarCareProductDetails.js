@@ -13,38 +13,41 @@ import {
   Image,
   Rating,
   AirbnbRating,
-  ImageBackground
+  ImageBackground,
+  ToastAndroid
 } from "react-native";
 
 const SelfCareServiceDetails = ({ route, navigation }) => {
   const [item, setItem] = React.useState({});
-  const { ID, USER_ID } = route.params;
+  const { ID, USER_ID,items,services } = route.params;
 
   React.useEffect(() => {
-    var formdata = new FormData();
-    formdata.append("user_id", USER_ID);
-    formdata.append("service_id", ID);
+    setItem(items)
+    // var formdata = new FormData();
+    // formdata.append("user_id", USER_ID);
+    // formdata.append("service_id", ID);
 
-    var requestOptions = {
-      method: "POST",
-      body: formdata,
-      redirect: "follow"
-    };
+    // var requestOptions = {
+    //   method: "POST",
+    //   body: formdata,
+    //   redirect: "follow"
+    // };
 
-    fetch(
-      "https://xionex.in/CarCare/api/v1/details-car-service",
-      requestOptions
-    )
-      .then(response => response.json())
-      .then(result => {
-        if (result.status) {
-          setItem(result.data);
-        }
-      })
-      .catch(error => console.log("error", error));
+    // fetch(
+    //   "https://xionex.in/CarCare/api/v1/details-car-service",
+    //   requestOptions
+    // )
+    //   .then(response => response.json())
+    //   .then(result => {
+    //     if (result.status) {
+    //       setItem(result.data);
+    //     }
+    //   })
+    //   .catch(error => console.log("error", error));
   }, [navigation]);
 
   const deleteItem = () => {
+   if(services){
     var formdata = new FormData();
     formdata.append("user_id", item.user_id);
     formdata.append("service_id", item.id);
@@ -59,11 +62,32 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
       .then(response => response.json())
       .then(result => {
         if (result.status) {
-          alert(result.message);
+          ToastAndroid.show(result.message,2000);
           navigation.goBack();
         }
       })
       .catch(error => console.log("error", error));
+   }else{
+    var formdata = new FormData();
+formdata.append("user_id", item.user_id);
+formdata.append("product_id", item.id);
+
+var requestOptions = {
+  method: 'POST',
+  body: formdata,
+  redirect: 'follow'
+};
+
+fetch("https://xionex.in/CarCare/api/v1/delete-product", requestOptions)
+.then(response => response.json())
+.then(result => {
+  if (result.status) {
+    ToastAndroid.show(result.message,2000);
+    navigation.goBack();
+  }
+})
+  .catch(error => console.log('error', error));
+   }
   };
 
   return (
@@ -79,10 +103,10 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
                 marginEnd: 2
               }}
               resizeMode={"cover"}
-              source={require("../../assets/car_service_banner.png")}
+              source={{uri:`https://xionex.in/CarCare/public/vendor/upload/${item.image}`}}
             />
           </View>
-          <View style={styles.off}>
+         {item.discount &&  <View style={styles.off}>
             <ImageBackground
               style={styles.offBg}
               resizeMode={"cover"}
@@ -93,7 +117,7 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
               </Text>
               <Text style={{ color: "#ffffff", fontSize: 10 }}>OFF</Text>
             </ImageBackground>
-          </View>
+          </View>}
         </View>
 
         <View
@@ -105,7 +129,8 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
           }}
         >
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.name}</Text>
-          <Image
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.place}</Text>
+          {/* <Image
             style={{
               width: 70,
               height: 18,
@@ -113,7 +138,7 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
             }}
             resizeMode={"cover"}
             source={require("../../assets/home_service.png")}
-          />
+          /> */}
         </View>
 
         <View
@@ -175,7 +200,8 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
             onPress={() =>
               navigation.navigate("AddCarService", {
                 edit: true,
-                item: item
+                item: item,
+                services: services,
               })
             }
             style={{
