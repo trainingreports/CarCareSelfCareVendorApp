@@ -121,7 +121,7 @@ class AddCarService extends React.Component {
           description: item.description,
           time: item.time,
           service_id: item.id,
-          image: item.image
+          image: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`,
         });
       } else {
         const { item } = this.props.route.params;
@@ -137,7 +137,7 @@ class AddCarService extends React.Component {
           description: item.description,
           specification: item.specification,
           service_id: item.id,
-          image: item.image
+          image: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`,
         });
       }
     }
@@ -595,15 +595,8 @@ class AddCarService extends React.Component {
                 borderRadius: 5
               }}
               resizeMode={"cover"}
-              source={
-                this.state.image &&
-                this.props.route.params?.edit &&
-                !this.state.localImage
-                  ? {
-                      uri: `https://xionex.in/CarCare/public/vendor/upload/${this.state.image}`
-                    }
-                  : { uri: this.state.image }
-              }
+              source={this.state.image?{uri:this.state.image}:
+              require("../../assets/9.4-Service-Add/image_placeholder.png")}
             />
           </TouchableOpacity>
 

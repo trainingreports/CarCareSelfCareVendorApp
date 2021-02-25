@@ -72,12 +72,46 @@ class HomeMain extends React.Component {
         .then(response => response.json())
         .then(result => {
           if(result.status){
-            console.log(result.data)
-            this.setState({profile:result.data})
-          }
+            this.setState({profile:{...result.data,image:`https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`,
+            cover_photo:`https://xionex.in/CarCare/public/vendor/upload/${result.data.cover_photo}`}})
+            }
         })
         .catch(error => console.log("error", error));
     });
+    const didFocusSubscription = this.props.navigation.addListener(
+      "focus",
+      () => {
+    this.getRole().then(role => {
+      if (role === "true") {
+        this.setState({role:true})
+      } else {
+        this.setState({role:false})
+      }
+    });
+    this.getId().then(id => {
+      var formdata = new FormData();
+      formdata.append("user_id", id);
+
+      var requestOptions = {
+        method: "POST",
+        body: formdata,
+        redirect: "follow"
+      };
+
+      fetch(
+        "https://xionex.in/CarCare/api/v1/get-business-info",
+        requestOptions
+      )
+        .then(response => response.json())
+        .then(result => {
+          if(result.status){
+            this.setState({profile:{...result.data,image:`https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`,
+            cover_photo:`https://xionex.in/CarCare/public/vendor/upload/${result.data.cover_photo}`}})
+            }
+        })
+        .catch(error => console.log("error", error));
+    });
+  })
   }
 
   render() {

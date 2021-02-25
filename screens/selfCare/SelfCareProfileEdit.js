@@ -25,7 +25,8 @@ const SelfCareProfileEdit = ({ navigation }) => {
   const [date] = useState(new Date(1598051730000));
   const [pickerOne,setPickerOne] = useState(false)
   const [pickerTwo,setPickerTwo] = useState(false)
-
+  const [categoryList,setCategoryList] = useState([])
+  const [subcategoryList,setSubcategoryList] = useState([])
   const [gender,setGender] = useState();
 
  const onChangeOne = (event, selectedDate) => {
@@ -80,6 +81,22 @@ const SelfCareProfileEdit = ({ navigation }) => {
     }
   };
 
+  const getCategory=()=>{
+    var requestOptions = {
+      method: "GET",
+      redirect: "follow"
+    };
+
+    fetch("https://xionex.in/CarCare/api/v1/clinic-type", requestOptions)
+      .then(response => response.json())
+      .then(result => {
+        if (result.status) {
+          setCategoryList(result.data)
+        }
+      })
+      .catch(error => console.log("error", error));
+  }
+
   useEffect(() => {
     getId().then(id => {
       var formdata = new FormData();
@@ -98,11 +115,15 @@ const SelfCareProfileEdit = ({ navigation }) => {
         .then(response => response.json())
         .then(result => {
           if(result.status){
-            console.log(result.status)
-            setProfile({...result.data,image:`https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`})
+            console.log(result.data)
+            setProfile({...result.data,image:`https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`,
+          cover_photo:`https://xionex.in/CarCare/public/vendor/upload/${result.data.cover_photo}`})
           }
+         
         })
         .catch(error => console.log("error", error));
+
+        getCategory()
     });
   }, [navigation]);
 
@@ -115,8 +136,8 @@ const SelfCareProfileEdit = ({ navigation }) => {
     formdata.append("phone", profile.phone);
     formdata.append("vertical", profile.vertical);
     formdata.append("place", profile.place);
-    formdata.append("category", "1");
-    formdata.append("subcategory", "4");
+    formdata.append("category", profile.category);
+    formdata.append("subcategory", profile.subcategory);
     formdata.append("cr_no", profile.cr_no);
     formdata.append("city", profile.city);
     formdata.append("country", profile.country);
@@ -126,10 +147,19 @@ const SelfCareProfileEdit = ({ navigation }) => {
     formdata.append("description", profile.description);
     formdata.append("time_from", profile.time_from);
     formdata.append("time_to", profile.time_to);
+    formdata.append("gender", profile.gender);
     formdata.append("oldimage", "");
     formdata.append("oldcover", "");
-    formdata.append("image", null);
-    formdata.append("cover_photo", null);
+    formdata.append("image", {
+      type: "image/*",
+      uri: profile.image,
+      name: profile.image
+    });
+    formdata.append("cover_photo", {
+      type: "image/*",
+      uri: profile.cover_photo,
+      name: profile.cover_photo
+    });
     
     var requestOptions = {
       method: 'POST',
@@ -297,58 +327,88 @@ const SelfCareProfileEdit = ({ navigation }) => {
         </View>
 
         <Text style={styles.textLabel}> Category </Text>
-        <View
-          style={{
-            borderRadius: 4,
-            borderWidth: 1,
-            borderColor: "gray",
-            width: "94%",
-            backgroundColor: "#ffffff"
-          }}
-        >
-          <Picker
-            style={{ height: 36 }}
-            mode="dropdown"
-            //selectedValue={selectedValue}
-            onValueChange={(itemValue, itemIndex) =>
-              setSelectedValue(itemValue)
-            }
-          >
-            <Picker.Item
-              label="Select Category"
-              color="#B3B3B3"
-              fontSize="10"
-              value="Select Category"
-            />
-          </Picker>
-        </View>
+            <View
+              style={{
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: "gray",
+                width: "94%",
+                backgroundColor: "#ffffff"
+              }}
+            >
+              <Picker
+                style={{ height: 36 }}
+                mode="dropdown"
+                selectedValue={profile.category}
+                onValueChange={(itemValue, itemIndex) => {
+                  setProfile({...profile,category:itemValue})
+                  var formdata = new FormData();
+                  formdata.append("clinic_id", itemValue);
 
-        <Text style={styles.textLabel}> SubCategory </Text>
-        <View
-          style={{
-            borderRadius: 4,
-            borderWidth: 1,
-            borderColor: "gray",
-            width: "94%",
-            backgroundColor: "#ffffff"
-          }}
-        >
-          <Picker
-            style={{ height: 36 }}
-            mode="dropdown"
-            //selectedValue={selectedValue}
-            onValueChange={(itemValue, itemIndex) =>
-              setSelectedValue(itemValue)
-            }
-          >
-            <Picker.Item
-              label="Select"
-              color="#B3B3B3"
-              fontSize="10"
-              value="Select SubCategory"
-            />
-          </Picker>
-        </View>
+                  var requestOptions = {
+                    method: "POST",
+                    body: formdata,
+                    redirect: "follow"
+                  };
+
+                  fetch(
+                    "https://xionex.in/CarCare/api/v1/sub-category",
+                    requestOptions
+                  )
+                    .then(response => response.json())
+                    .then(result => {
+                      if (result.status) {
+                        setSubcategoryList(result.data)
+                      }
+                    })
+                    .catch(error => console.log("error", error));
+                }}
+              >
+                {categoryList.map((item, i) => {
+                  return (
+                    <Picker.Item
+                      key={i}
+                      label={item.title}
+                      color="#B3B3B3"
+                      fontSize="10"
+                      value={item.id}
+                    />
+                  );
+                })}
+              </Picker>
+            </View>
+
+            <Text style={styles.textLabel}> SubCategory </Text>
+            <View
+              style={{
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: "gray",
+                width: "94%",
+                backgroundColor: "#ffffff"
+              }}
+            >
+              <Picker
+                style={{ height: 36 }}
+                mode="dropdown"
+                selectedValue={profile.subcategory}
+                onValueChange={(itemValue, itemIndex) =>
+                  setProfile({...profile,subcategory:itemValue})
+                }
+              >
+                {subcategoryList.map((item, i) => {
+                  return (
+                    <Picker.Item
+                      key={i}
+                      label={item.title}
+                      color="#B3B3B3"
+                      fontSize="10"
+                      value={item.id}
+                    />
+                  );
+                })}
+              </Picker>
+            </View>
 
         <Text style={styles.textLabel}> Select Place </Text>
         <View

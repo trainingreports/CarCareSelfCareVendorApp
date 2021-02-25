@@ -48,9 +48,9 @@ class TabStack extends React.Component {
         .then(response => response.json())
         .then(result => {
           if(result.status){
-            console.log(result.data)
-            this.setState({profile:result.data})
-          }
+            this.setState({profile:{...result.data,image:`https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`,
+            cover_photo:`https://xionex.in/CarCare/public/vendor/upload/${result.data.cover_photo}`}})
+            }
         })
         .catch(error => console.log("error", error));
     });
@@ -70,7 +70,7 @@ class TabStack extends React.Component {
                 height: 200,
               }}
               resizeMode={'cover'}
-              source={profile.image?{uri:profile.image}:
+              source={profile.cover_photo?{uri:profile.cover_photo}:
               require('../../assets/13.2-3-5-Car-Service-Profile/service_pic001.png')}
             />
 
@@ -80,8 +80,9 @@ class TabStack extends React.Component {
               marginTop: -30,
             }}>
               <Text style={{ width: '70%', color: '#FFFFFF', marginStart: 12 }}>{profile.time_from} - {profile.time_to}</Text>
-              <Text style={{ color: '#FFFFFF', fontSize: 12, borderRadius: 2, paddingStart: 4, paddingEnd: 4, backgroundColor: '#FF3B30' }}>Male</Text>
-              <Text style={{ color: '#FFFFFF', fontSize: 12, borderRadius: 2, paddingStart: 4, paddingEnd: 4, backgroundColor: '#8CC63F', marginStart: 4 }}>Female</Text>
+              {String(profile.gender).toLowerCase() == 'male'
+                ?<Text style={{ color: '#FFFFFF', fontSize: 12, borderRadius: 2, paddingStart: 4, paddingEnd: 4, backgroundColor: '#FF3B30' }}>Male</Text>
+              :<Text style={{ color: '#FFFFFF', fontSize: 12, borderRadius: 2, paddingStart: 4, paddingEnd: 4, backgroundColor: '#8CC63F', marginStart: 4 }}>Female</Text>}
             </View>
 
             <View style={{
@@ -155,7 +156,7 @@ class TabStack extends React.Component {
               }} />
             <Tab.Screen
               name="AboutUsPage"
-              children={()=><AboutUsPage profile={profile}/>}
+              component={AboutUsPage}
               options={{
                 tabBarLabel: 'ABOUT US',
                 // tabBarIcon: ({ color, size }) => (

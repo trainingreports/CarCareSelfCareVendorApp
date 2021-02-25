@@ -34,7 +34,6 @@ const AboutUsPage = ({ route,navigation }) => {
         .then(response => response.json())
         .then(result => {
           if(result.status){
-            console.log('kjablkd=======>',result.data)
            setProfile(result.data)
           }
         })

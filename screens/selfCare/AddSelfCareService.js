@@ -38,7 +38,7 @@ class AddSelfCareService extends React.Component {
     type: "Cosmetic Clinic",
     date: new Date(1598051730000),
     show: false,
-    localImage:false
+    localImage: false
   };
 
   onChange = (event, selectedDate) => {
@@ -81,7 +81,7 @@ class AddSelfCareService extends React.Component {
         quality: 0.5
       });
       if (!result.cancelled) {
-        this.setState({ image: result.uri, localImage:true});
+        this.setState({ image: result.uri, localImage: true });
       }
     } catch (E) {
       console.log(E);
@@ -99,6 +99,7 @@ class AddSelfCareService extends React.Component {
         category_id: item.category_id,
         name: item.name,
         price: item.price,
+        image: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`,
         discount: item.discount,
         description: item.description,
         time: item.time,
@@ -133,18 +134,18 @@ class AddSelfCareService extends React.Component {
       image
     ) {
       if (this.props.route.params?.edit) {
-        
         var formdata = new FormData();
+
         formdata.append("user_id", id);
         formdata.append("type", type);
-        formdata.append("name",name)
+        formdata.append("name", name);
         formdata.append("clinic_type", clinic_type);
         formdata.append("category_id", category_id);
-        formdata.append("image", {
-          type: "image/*",
-          uri: image,
-          name: image
-        });
+            formdata.append("image", {
+              type: "image/*",
+              uri: image,
+              name: image
+            });
         formdata.append("price", price);
         formdata.append("discount", discount);
         formdata.append("description", description);
@@ -202,7 +203,6 @@ class AddSelfCareService extends React.Component {
           .then(result => {
             if (result.status) {
               ToastAndroid.show(result.message, 2000);
-              this.props.navigation.goBack();
               this.props.navigation.goBack();
             }
           })
@@ -449,11 +449,8 @@ class AddSelfCareService extends React.Component {
                 borderRadius: 5
               }}
               resizeMode={"cover"}
-              source={
-                this.state.image && this.props.route.params?.edit && !this.state.localImage
-                  ? { uri: `https://xionex.in/CarCare/public/vendor/upload/${this.state.image}` }
-                  : { uri: this.state.image }
-              }
+              source={this.state.image?{uri:this.state.image}:
+              require("../../assets/9.4-Service-Add/image_placeholder.png")}
             />
           </TouchableOpacity>
 

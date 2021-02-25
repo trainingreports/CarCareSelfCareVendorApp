@@ -51,9 +51,9 @@ class Login extends React.Component {
       };
 
       var formdata = new FormData();
-        formdata.append("fb_id", "");
-        formdata.append("social_type", "gmail");
-        formdata.append("gmail_id", "106104419216762923154");
+      formdata.append("fb_id", user.fb_id);
+      formdata.append("social_type", user.type);
+      formdata.append("gmail_id", user.google_id);
         formdata.append("role", "2");
 
         var requestOptions = {
@@ -170,7 +170,7 @@ class Login extends React.Component {
         var formdata = new FormData();
         formdata.append("fb_id", user.fb_id);
         formdata.append("social_type", user.type);
-        formdata.append("google_id", user.google_id);
+        formdata.append("gmail_id", user.google_id);
         formdata.append("role", "2");
 
         var requestOptions = {

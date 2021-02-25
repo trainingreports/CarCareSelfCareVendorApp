@@ -133,7 +133,9 @@ class HomeCarCareService extends React.Component {
             <Image
               style={{
                 width: 108,
-                height: 108
+                height: 108,
+                marginLeft:15,
+                borderRadius:5
               }}
               resizeMode={"cover"}
               source={{ uri:`https://xionex.in/CarCare/public/vendor/upload/${item.image}` }}
@@ -564,7 +566,7 @@ const styles = StyleSheet.create({
     height: 58
   },
   buttonContainer: {
-    width: "100%",
+    width: "92%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center"

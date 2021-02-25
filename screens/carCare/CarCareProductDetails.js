@@ -18,8 +18,21 @@ import {
 } from "react-native";
 
 const SelfCareServiceDetails = ({ route, navigation }) => {
+  
   const [item, setItem] = React.useState({});
   const { ID, USER_ID,items,services } = route.params;
+
+  React.useEffect(() => {
+    if(route.params.services){
+      navigation.setOptions({
+        title: 'Services Detail Screen',
+      });
+    }else{
+      navigation.setOptions({
+        title: 'Product Detail Screen',
+      });
+    }
+  }, [navigation]);
 
   React.useEffect(() => {
     setItem(items)
