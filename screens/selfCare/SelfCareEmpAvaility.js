@@ -134,7 +134,7 @@ class EmpAbility extends React.Component {
                         '2021-02-10': { selected: true, endingDay: true, color: 'green', textColor: 'gray' },
                         '2021-02-11': { selected: true, endingDay: true, color: 'green', textColor: 'gray' },
                         '2021-02-12': { selected: true, endingDay: true, color: 'green', textColor: 'gray' },
-                        '2021-02-17': { disabled: true, startingDay: true, color: 'red', textColor: 'red', endingDay: true }
+                         
                     }}
                     
                 />
