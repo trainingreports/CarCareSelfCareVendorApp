@@ -16,6 +16,7 @@ import {
   ImageBackground,
   ToastAndroid
 } from "react-native";
+import {URL} from '../../DomainConstant';
 
 const SelfCareServiceDetails = ({ route, navigation }) => {
   
@@ -36,27 +37,6 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
 
   React.useEffect(() => {
     setItem(items)
-    // var formdata = new FormData();
-    // formdata.append("user_id", USER_ID);
-    // formdata.append("service_id", ID);
-
-    // var requestOptions = {
-    //   method: "POST",
-    //   body: formdata,
-    //   redirect: "follow"
-    // };
-
-    // fetch(
-    //   "https://xionex.in/CarCare/api/v1/details-car-service",
-    //   requestOptions
-    // )
-    //   .then(response => response.json())
-    //   .then(result => {
-    //     if (result.status) {
-    //       setItem(result.data);
-    //     }
-    //   })
-    //   .catch(error => console.log("error", error));
   }, [navigation]);
 
   const deleteItem = () => {
@@ -71,7 +51,7 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
       redirect: "follow"
     };
 
-    fetch("https://xionex.in/CarCare/api/v1/delete-car-service", requestOptions)
+    fetch(`${URL}delete-car-service`, requestOptions)
       .then(response => response.json())
       .then(result => {
         if (result.status) {
@@ -91,7 +71,7 @@ var requestOptions = {
   redirect: 'follow'
 };
 
-fetch("https://xionex.in/CarCare/api/v1/delete-product", requestOptions)
+fetch(`${URL}delete-product`, requestOptions)
 .then(response => response.json())
 .then(result => {
   if (result.status) {

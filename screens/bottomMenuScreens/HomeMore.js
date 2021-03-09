@@ -9,13 +9,13 @@ import {
   TouchableOpacity,
   ToastAndroid
 } from "react-native";
-import AsyncStorage from '@react-native-community/async-storage';
-
+import AsyncStorage from "@react-native-community/async-storage";
+import {URL} from '../../DomainConstant'
 class HomeMain extends React.Component {
-  state={
-    role:false,
-    profile:{}
-  }
+  state = {
+    role: false,
+    profile: {}
+  };
 
   getId = async () => {
     try {
@@ -28,16 +28,16 @@ class HomeMain extends React.Component {
 
   deleteData = async () => {
     try {
-      await AsyncStorage.removeItem('id',this.logout)
+      await AsyncStorage.removeItem("id", this.logout);
     } catch (e) {
-      alert('err')
-      console.log('Logout Error:'+e)
+      alert("err");
+      console.log("Logout Error:" + e);
     }
-  }
-  logout=()=>{
-        ToastAndroid.show('Logged Out',2000)
-        this.props.navigation.navigate('Login')
-  }
+  };
+  logout = () => {
+    ToastAndroid.show("Logged Out", 2000);
+    this.props.navigation.navigate("Login");
+  };
   getRole = async () => {
     try {
       const value = await AsyncStorage.getItem("self");
@@ -47,12 +47,12 @@ class HomeMain extends React.Component {
     }
   };
 
-  componentDidMount(){
+  componentDidMount() {
     this.getRole().then(role => {
       if (role === "true") {
-        this.setState({role:true})
+        this.setState({ role: true });
       } else {
-        this.setState({role:false})
+        this.setState({ role: false });
       }
     });
     this.getId().then(id => {
@@ -65,58 +65,63 @@ class HomeMain extends React.Component {
         redirect: "follow"
       };
 
-      fetch(
-        "https://xionex.in/CarCare/api/v1/get-business-info",
-        requestOptions
-      )
+      fetch(`${URL}get-business-info`, requestOptions)
         .then(response => response.json())
         .then(result => {
-          if(result.status){
-            this.setState({profile:{...result.data,image:`https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`,
-            cover_photo:`https://xionex.in/CarCare/public/vendor/upload/${result.data.cover_photo}`}})
-            }
+          if (result.status) {
+            this.setState({
+              profile: {
+                ...result.data,
+                image: `https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`,
+                cover_photo: `https://xionex.in/CarCare/public/vendor/upload/${result.data.cover_photo}`
+              }
+            });
+          }
         })
         .catch(error => console.log("error", error));
     });
     const didFocusSubscription = this.props.navigation.addListener(
       "focus",
       () => {
-    this.getRole().then(role => {
-      if (role === "true") {
-        this.setState({role:true})
-      } else {
-        this.setState({role:false})
+        this.getRole().then(role => {
+          if (role === "true") {
+            this.setState({ role: true });
+          } else {
+            this.setState({ role: false });
+          }
+        });
+        this.getId().then(id => {
+          var formdata = new FormData();
+          formdata.append("user_id", id);
+
+          var requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow"
+          };
+
+          fetch(`${URL}get-business-info`, requestOptions)
+            .then(response => response.json())
+            .then(result => {
+              if (result.status) {
+                this.setState({
+                  profile: {
+                    ...result.data,
+                    image: `https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`,
+                    cover_photo: `https://xionex.in/CarCare/public/vendor/upload/${result.data.cover_photo}`
+                  }
+                });
+              }
+            })
+            .catch(error => console.log("error", error));
+        });
       }
-    });
-    this.getId().then(id => {
-      var formdata = new FormData();
-      formdata.append("user_id", id);
-
-      var requestOptions = {
-        method: "POST",
-        body: formdata,
-        redirect: "follow"
-      };
-
-      fetch(
-        "https://xionex.in/CarCare/api/v1/get-business-info",
-        requestOptions
-      )
-        .then(response => response.json())
-        .then(result => {
-          if(result.status){
-            this.setState({profile:{...result.data,image:`https://xionex.in/CarCare/public/vendor/upload/${result.data.image}`,
-            cover_photo:`https://xionex.in/CarCare/public/vendor/upload/${result.data.cover_photo}`}})
-            }
-        })
-        .catch(error => console.log("error", error));
-    });
-  })
+    );
   }
 
   render() {
     const navigation = this.props.navigation;
-    const {profile} = this.state
+    const { profile } = this.state;
     return (
       <ScrollView>
         <View style={styles.container}>
@@ -139,8 +144,11 @@ class HomeMain extends React.Component {
               borderColor: "#FFFFFF"
             }}
             resizeMode={"contain"}
-            source={profile.image?{uri:profile.image}:
-              require("../../assets/13.1-4-6-More/vendor_logo.png")}
+            source={
+              profile.image
+                ? { uri: profile.image }
+                : require("../../assets/13.1-4-6-More/vendor_logo.png")
+            }
           />
 
           <View style={styles.rawContainer}>
@@ -153,7 +161,7 @@ class HomeMain extends React.Component {
                 justifyContent: "center"
               }}
             >
-             {profile?.name}
+              {profile?.name}
             </Text>
 
             <Text
@@ -188,7 +196,7 @@ class HomeMain extends React.Component {
                 justifyContent: "center"
               }}
             >
-             {profile?.email}
+              {profile?.email}
             </Text>
 
             <Text
@@ -244,13 +252,13 @@ class HomeMain extends React.Component {
               source={require("../../assets/13.1-4-6-More/add_emp_availability.png")}
             />
             <TouchableOpacity
-              onPress={() =>
-                this.props.navigation.navigate("EmpAvaility",{carCare:this.state.role})
-              }
+              onPress={() => this.props.navigation.navigate("EmpAvaility")}
             >
-              <Text style={styles.label}>{
-                this.state.role?'Add Employee & Availability':'Add Availability'
-              }</Text>
+              <Text style={styles.label}>
+                {this.state.role
+                  ? "Add Employee & Availability"
+                  : "Add Availability"}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -374,10 +382,7 @@ class HomeMain extends React.Component {
               resizeMode={"contain"}
               source={require("../../assets/13.1-4-6-More/signout.png")}
             />
-            <TouchableOpacity
-              style={styles.label}
-              onPress={this.deleteData}
-            >
+            <TouchableOpacity style={styles.label} onPress={this.deleteData}>
               <Text style={styles.label}>Sign Out</Text>
             </TouchableOpacity>
           </View>
@@ -493,10 +498,10 @@ const styles = StyleSheet.create({
     marginEnd: 16
   },
   label: {
-    width:'auto',
+    width: "auto",
     fontSize: 18,
     color: "#4D4D4D",
-    justifyContent: "center",
+    justifyContent: "center"
   },
   view: {
     width: "90%",

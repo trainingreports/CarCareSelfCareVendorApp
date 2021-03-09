@@ -16,6 +16,7 @@ import {
   ImageBackground,
   ToastAndroid
 } from "react-native";
+import {URL} from '../../DomainConstant';
 
 const SelfCareServiceDetails = ({ route, navigation }) => {
   const [item, setItem] = React.useState({});
@@ -33,7 +34,7 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
     };
 
     fetch(
-      "https://xionex.in/CarCare/api/v1/details-self-service",
+     `${URL}details-self-service`,
       requestOptions
     )
       .then(response => response.json())
@@ -58,7 +59,7 @@ const SelfCareServiceDetails = ({ route, navigation }) => {
     };
 
     fetch(
-      "https://xionex.in/CarCare/api/v1/delete-self-service",
+     `${URL}delete-self-service`,
       requestOptions
     )
       .then(response => response.json())

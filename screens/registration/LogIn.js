@@ -12,12 +12,12 @@ import {
   ImageBackground,
   ToastAndroid
 } from "react-native";
-import axios from "axios";
 import FormData from "form-data";
 import ProgressDialog from "react-native-progress-dialog";
 import AsyncStorage from "@react-native-community/async-storage";
 import * as Google from "expo-google-app-auth";
 import * as Facebook from "expo-facebook";
+import {URL} from '../../DomainConstant';
 
 class Login extends React.Component {
   constructor(props) {
@@ -62,7 +62,7 @@ class Login extends React.Component {
           redirect: "follow"
         };
 
-        fetch("https://xionex.in/CarCare/api/v1/social-login", requestOptions)
+        fetch(`${URL}social-login`, requestOptions)
           .then(response => response.json())
           .then(result => {
             console.log(result)
@@ -125,7 +125,7 @@ class Login extends React.Component {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/login", requestOptions)
+      fetch(`${URL}login`, requestOptions)
         .then(response => response.json())
         .then(result => {
           console.log(result);
@@ -179,7 +179,7 @@ class Login extends React.Component {
           redirect: "follow"
         };
 
-        fetch("https://xionex.in/CarCare/api/v1/social-login", requestOptions)
+        fetch(`${URL}social-login`, requestOptions)
           .then(response => response.json())
           .then(result => {
             if(result.status){

@@ -20,6 +20,7 @@ import UserPermissions from "../../UserPermissions";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
+import {URL} from '../../DomainConstant';
 
 class AddSelfCareService extends React.Component {
   state = {
@@ -60,7 +61,7 @@ class AddSelfCareService extends React.Component {
       redirect: "follow"
     };
 
-    fetch("https://xionex.in/CarCare/api/v1/clinic-type", requestOptions)
+    fetch(`${URL}clinic-type`, requestOptions)
       .then(response => response.json())
       .then(result => {
         if (result.status) {
@@ -159,7 +160,7 @@ class AddSelfCareService extends React.Component {
         };
 
         fetch(
-          "https://xionex.in/CarCare/api/v1/edit-self-service",
+          `${URL}edit-self-service`,
           requestOptions
         )
           .then(response => response.json())
@@ -196,7 +197,7 @@ class AddSelfCareService extends React.Component {
         };
 
         fetch(
-          "https://xionex.in/CarCare/api/v1/add-self-service",
+          `${URL}add-self-service`,
           requestOptions
         )
           .then(response => response.json())
@@ -310,7 +311,7 @@ class AddSelfCareService extends React.Component {
                     };
 
                     fetch(
-                      "https://xionex.in/CarCare/api/v1/sub-category",
+                      `${URL}sub-category`,
                       requestOptions
                     )
                       .then(response => response.json())

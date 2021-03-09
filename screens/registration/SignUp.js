@@ -1,6 +1,5 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
-//import React from 'react';
 import {
   Text,
   View,
@@ -10,18 +9,16 @@ import {
   TextInput,
   Button,
   TouchableOpacity,
-  SafeAreaView,
-  FlatList,
   Image,
-  Rating,
-  AirbnbRating,
   Picker,
   ToastAndroid
 } from "react-native";
-import axios from "axios";
 import FormData from "form-data";
+import {URL} from '../../DomainConstant';
 import ProgressDialog from "react-native-progress-dialog";
-
+import AsyncStorage from "@react-native-community/async-storage";
+import * as Google from "expo-google-app-auth";
+import * as Facebook from "expo-facebook";
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -69,7 +66,7 @@ class App extends React.Component {
       redirect: "follow"
     };
 
-    fetch("https://xionex.in/CarCare/api/v1/clinic-type", requestOptions)
+    fetch(`${URL}clinic-type`, requestOptions)
       .then(response => response.json())
       .then(result => {
         if (result.status) {
@@ -151,7 +148,7 @@ class App extends React.Component {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/sign-up", requestOptions)
+      fetch("`${URL}sign-up", requestOptions)
         .then(response => response.json())
         .then(result => {
           console.log(result);
@@ -168,6 +165,128 @@ class App extends React.Component {
           this.setState({ wait: false });
           console.log("error", error);
         });
+    }
+  };
+  storeData = async (id, vertical) => {
+    try {
+      await AsyncStorage.setItem("id", String(id));
+      if (vertical === "Self-care") {
+        await AsyncStorage.setItem("self", JSON.stringify(true));
+        this.props.navigation.navigate("App");
+        this.setState({ wait: false });
+      } else if (vertical === "Car-care") {
+        await AsyncStorage.setItem("self", JSON.stringify(false));
+        this.props.navigation.navigate("App");
+        this.setState({ wait: false });
+      }
+    } catch (e) {
+      alert("Something went wrong");
+    }
+  };
+  signInAsync = async () => {
+    const result = await Google.logInAsync({
+      androidClientId:
+        "766262472004-8ucj60k0gsanfmjm5snjhfdu3b9qi2a4.apps.googleusercontent.com",
+      scopes: ["profile", "email"],
+      androidStandaloneAppClientId:
+        "766262472004-8ucj60k0gsanfmjm5snjhfdu3b9qi2a4.apps.googleusercontent.com"
+    });
+
+    if (result.type === "success") {
+      console.log("USER_INFO", result.user);
+      const user = {
+        email: result.user.email,
+        name: result.user.name,
+        google_id: result.user.id,
+        fb_id: "",
+        type: "gmail"
+      };
+
+      var formdata = new FormData();
+      formdata.append("fb_id", user.fb_id);
+      formdata.append("social_type", user.type);
+      formdata.append("gmail_id", user.google_id);
+        formdata.append("role", "2");
+
+        var requestOptions = {
+          method: "POST",
+          body: formdata,
+          redirect: "follow"
+        };
+
+        fetch(`${URL}social-login`, requestOptions)
+          .then(response => response.json())
+          .then(result => {
+            console.log(result)
+            if(result.status){
+              this.storeData(result.data.id, result.data.vertical);
+            }else {
+              this.setState({
+                name: user.name,
+                email: user.email,
+                google_id: user.google_id,
+                fb_id: user.fb_id,
+                type: user.type
+              });
+            }
+          })
+          .catch(error => console.log("error", error));
+    }
+  };
+  signInWithFb = async () => {
+    try {
+      await Facebook.initializeAsync("842471036316892", "Self care");
+      const result = await Facebook.logInWithReadPermissionsAsync({
+        permissions: ["public_profile", "email"]
+      });
+
+      if (result.type === "success") {
+        
+        const response = await fetch(
+          `https://graph.facebook.com/me?fields=id,name,email,birthday&access_token=${result.token}`
+        );
+
+        const res = await response.json();
+       
+        const user = {
+          email: res.email,
+          name: res.name,
+          google_id: "",
+          fb_id: res.id,
+          type: "facebook"
+        };
+
+        var formdata = new FormData();
+        formdata.append("fb_id", user.fb_id);
+        formdata.append("social_type", user.type);
+        formdata.append("gmail_id", user.google_id);
+        formdata.append("role", "2");
+
+        var requestOptions = {
+          method: "POST",
+          body: formdata,
+          redirect: "follow"
+        };
+
+        fetch(`${URL}social-login`, requestOptions)
+          .then(response => response.json())
+          .then(result => {
+            if(result.status){
+              this.storeData(result.data.id, result.data.vertical);
+            }else {
+              this.setState({
+                name: user.name,
+                email: user.email,
+                google_id: user.google_id,
+                fb_id: user.fb_id,
+                type: user.type
+              });
+            }
+          })
+          .catch(error => console.log("error", error));
+      }
+    } catch ({ message }) {
+      alert(`Facebook Login Error: ${message}`);
     }
   };
 
@@ -279,7 +398,7 @@ class App extends React.Component {
                   };
 
                   fetch(
-                    "https://xionex.in/CarCare/api/v1/sub-category",
+                    "`${URL}sub-category",
                     requestOptions
                   )
                     .then(response => response.json())
@@ -455,7 +574,9 @@ class App extends React.Component {
 
             <View style={styles.buttonContainer}>
               <View style={styles.socialButtonContainer}>
-                <TouchableOpacity style={styles.centerAlign}>
+                <TouchableOpacity
+                 onPress={this.signInWithFb}
+                style={styles.centerAlign}>
                   <Image
                     style={styles.socialIcon}
                     source={require("../../assets/2-Login/fb.png")}
@@ -472,7 +593,9 @@ class App extends React.Component {
                   { backgroundColor: "#FFFFFF" }
                 ]}
               >
-                <TouchableOpacity style={styles.centerAlign}>
+                <TouchableOpacity
+                 onPress={this.signInAsync}
+                style={styles.centerAlign}>
                   <Image
                     style={styles.socialIcon}
                     source={require("../../assets/2-Login/goolge.png")}

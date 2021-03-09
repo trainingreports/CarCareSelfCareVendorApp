@@ -10,20 +10,13 @@ import {
   TextInput,
   Button,
   TouchableOpacity,
-  SafeAreaView,
-  FlatList,
-  Image,
-  Rating,
-  AirbnbRating
+
 } from "react-native";
-///import { SafeAreaView, FlatList, } from 'react-native';
-import { NavigationContainer } from "@react-navigation/native";
-import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { createStackNavigator } from "@react-navigation/stack";
+
 import AsyncStorage from "@react-native-community/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
+import {URL} from '../../DomainConstant';
 
 class GenerateOfferCode extends React.Component {
   state = {
@@ -91,7 +84,7 @@ class GenerateOfferCode extends React.Component {
           redirect: "follow"
         };
 
-        fetch("https://xionex.in/CarCare/api/v1/edit-offer", requestOptions)
+        fetch(`${URL}edit-offer`, requestOptions)
           .then(response => response.json())
           .then(result => {
             if (result.status) {
@@ -114,7 +107,7 @@ class GenerateOfferCode extends React.Component {
           redirect: "follow"
         };
 
-        fetch("https://xionex.in/CarCare/api/v1/add-offer", requestOptions)
+        fetch(`${URL}add-offer`, requestOptions)
           .then(response => response.json())
           .then(result => {
             if (result.status) {

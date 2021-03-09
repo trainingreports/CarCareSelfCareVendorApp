@@ -12,6 +12,8 @@ import {
   ToastAndroid
 } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
+import { URL } from "../../DomainConstant";
+import StarRating from "react-native-star-rating";
 
 class HomeSelfCareService extends React.Component {
   state = {
@@ -40,16 +42,16 @@ class HomeSelfCareService extends React.Component {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/my-self-service", requestOptions)
+      fetch(`${URL}my-self-service`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {
-           this.setState({ data: result.data });
+            this.setState({ data: result.data });
           }
         })
         .catch(error => console.log("error", error));
     });
-  }
+  };
 
   componentDidMount() {
     this.getData();
@@ -61,7 +63,7 @@ class HomeSelfCareService extends React.Component {
     );
   }
 
-  renderItem = ({item}) => {
+  renderItem = ({ item }) => {
     const navigation = this.props.navigation;
     const deleteItem = () => {
       var formdata = new FormData();
@@ -74,15 +76,12 @@ class HomeSelfCareService extends React.Component {
         redirect: "follow"
       };
 
-      fetch(
-        "https://xionex.in/CarCare/api/v1/delete-self-service",
-        requestOptions
-      )
+      fetch(`${URL}delete-self-service`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {
             this.getData();
-            ToastAndroid.show(result.message,2000);
+            ToastAndroid.show(result.message, 2000);
           }
         })
         .catch(error => console.log("error====>", error));
@@ -93,7 +92,7 @@ class HomeSelfCareService extends React.Component {
           navigation.navigate("SelfCareServiceDetails", {
             ID: item.id,
             USER_ID: this.state.user_id,
-            items:item
+            items: item
           });
         }}
       >
@@ -103,12 +102,13 @@ class HomeSelfCareService extends React.Component {
               style={{
                 width: 108,
                 height: 108,
-                marginLeft:15,
-                borderRadius:5
+                marginLeft: 15,
+                borderRadius: 5
               }}
               resizeMode={"cover"}
-              source={{uri:`https://xionex.in/CarCare/public/vendor/upload/${item.image}`}}
-            
+              source={{
+                uri: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`
+              }}
             />
             <View style={{ width: "76%", marginStart: 10, marginEnd: 10 }}>
               <View style={styles.buttonContainer}>
@@ -121,7 +121,7 @@ class HomeSelfCareService extends React.Component {
                     navigation.navigate("SelfCareServiceDetails", {
                       ID: item.id,
                       USER_ID: this.state.user_id,
-                      items:item
+                      items: item
                     })
                   }
                 >
@@ -155,6 +155,15 @@ class HomeSelfCareService extends React.Component {
               <Text style={{ width: "50%", fontWeight: "bold" }}>
                 {item.price} AED{" "}
               </Text>
+              <StarRating
+                disabled={true}
+                maxStars={5}
+                rating={parseInt(item.avg_rating)}
+                starSize={14}
+                starStyle={{
+                  color: "#FFB74D"
+                }}
+              />
               <Text style={{ width: "98%", color: "#B3B3B3" }}>
                 {item.description}
               </Text>
@@ -210,16 +219,15 @@ class HomeSelfCareService extends React.Component {
               borderBottomWidth: 1
             }}
           />
-        
-            <FlatList
-              data={this.state.data}
-              renderItem={this.renderItem}
-              keyExtractor={item => item.id}
-              ListEmptyComponent={() => (
-                <Text style={{ textAlign: "center" }}>NO DATA YET</Text>
-              )}
-            />
-        
+
+          <FlatList
+            data={this.state.data}
+            renderItem={this.renderItem}
+            keyExtractor={item => item.id}
+            ListEmptyComponent={() => (
+              <Text style={{ textAlign: "center" }}>NO DATA YET</Text>
+            )}
+          />
         </View>
       </ScrollView>
     );

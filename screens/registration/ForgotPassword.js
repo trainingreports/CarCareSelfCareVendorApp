@@ -9,6 +9,7 @@ import {
   Image,
   Button
 } from "react-native";
+import {URL} from '../../DomainConstant';
 
 const ForgotPassword = ({ navigation }) => {
   const [phone, setPhone] = React.useState("");
@@ -24,7 +25,7 @@ const ForgotPassword = ({ navigation }) => {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/send-otp", requestOptions)
+      fetch(`${URL}send-otp`, requestOptions)
         .then(response => response.json())
         .then(response => {
           if (response) {

@@ -19,6 +19,7 @@ import UserPermissions from "../../UserPermissions";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from 'moment';
+import {URL} from '../../DomainConstant';
 
 const SelfCareProfileEdit = ({ navigation }) => {
   const [profile,setProfile] = useState({});
@@ -87,7 +88,7 @@ const SelfCareProfileEdit = ({ navigation }) => {
       redirect: "follow"
     };
 
-    fetch("https://xionex.in/CarCare/api/v1/clinic-type", requestOptions)
+    fetch(`${URL}clinic-type`, requestOptions)
       .then(response => response.json())
       .then(result => {
         if (result.status) {
@@ -109,7 +110,7 @@ const SelfCareProfileEdit = ({ navigation }) => {
       };
 
       fetch(
-        "https://xionex.in/CarCare/api/v1/get-business-info",
+        `${URL}get-business-info`,
         requestOptions
       )
         .then(response => response.json())
@@ -167,7 +168,7 @@ const SelfCareProfileEdit = ({ navigation }) => {
       redirect: 'follow'
     };
     
-    fetch("https://xionex.in/CarCare/api/v1/add-business-info", requestOptions)
+    fetch(`${URL}add-business-info`, requestOptions)
       .then(response => response.json())
       .then(result => {
         if(result.status){
@@ -352,7 +353,7 @@ const SelfCareProfileEdit = ({ navigation }) => {
                   };
 
                   fetch(
-                    "https://xionex.in/CarCare/api/v1/sub-category",
+                    `${URL}sub-category`,
                     requestOptions
                   )
                     .then(response => response.json())

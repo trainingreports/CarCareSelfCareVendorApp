@@ -10,7 +10,7 @@ import {
   FlatList
 } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
-
+import {URL} from '../../DomainConstant';
 function HomeOffer({ navigation }) {
   const [offers, setOffers] = useState();
 
@@ -33,7 +33,7 @@ function HomeOffer({ navigation }) {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/my-offer", requestOptions)
+      fetch(`${URL}my-offer`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {
@@ -65,7 +65,7 @@ function HomeOffer({ navigation }) {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/delete-offer", requestOptions)
+      fetch(`${URL}delete-offer`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {

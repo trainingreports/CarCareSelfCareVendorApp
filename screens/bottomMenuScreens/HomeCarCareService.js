@@ -4,7 +4,6 @@ import {
   ScrollView,
   View,
   Text,
-  SafeAreaView,
   Image,
   FlatList,
   StyleSheet,
@@ -14,7 +13,8 @@ import {
   ToastAndroid
 } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
-
+import StarRating from "react-native-star-rating";
+import { URL } from "../../DomainConstant";
 const { width } = Dimensions.get("screen");
 
 class HomeCarCareService extends React.Component {
@@ -46,7 +46,7 @@ class HomeCarCareService extends React.Component {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/my-car-service", requestOptions)
+      fetch(`${URL}my-car-service`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {
@@ -68,7 +68,7 @@ class HomeCarCareService extends React.Component {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/my-product", requestOptions)
+      fetch(`${URL}my-product`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {
@@ -104,15 +104,12 @@ class HomeCarCareService extends React.Component {
         redirect: "follow"
       };
 
-      fetch(
-        "https://xionex.in/CarCare/api/v1/delete-car-service",
-        requestOptions
-      )
+      fetch(`${URL}delete-car-service`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {
             this.getData();
-            ToastAndroid.show(result.message,2000);
+            ToastAndroid.show(result.message, 2000);
           }
         })
         .catch(error => console.log("error", error));
@@ -134,11 +131,13 @@ class HomeCarCareService extends React.Component {
               style={{
                 width: 108,
                 height: 108,
-                marginLeft:15,
-                borderRadius:5
+                marginLeft: 15,
+                borderRadius: 5
               }}
               resizeMode={"cover"}
-              source={{ uri:`https://xionex.in/CarCare/public/vendor/upload/${item.image}` }}
+              source={{
+                uri: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`
+              }}
             />
             <View style={{ width: "76%", marginStart: 10, marginEnd: 10 }}>
               <View style={styles.buttonContainer}>
@@ -186,6 +185,17 @@ class HomeCarCareService extends React.Component {
               <Text style={{ width: "50%", fontWeight: "bold" }}>
                 {item.price} AED{" "}
               </Text>
+              <View style={{ alignItems: "flex-start" }}>
+                <StarRating
+                  disabled={true}
+                  maxStars={5}
+                  rating={parseInt(item.avg_rating)}
+                  starSize={14}
+                  starStyle={{
+                    color: "#FFB74D"
+                  }}
+                />
+              </View>
               <Text style={{ width: "98%", color: "#B3B3B3" }}>
                 {item.description}
               </Text>
@@ -213,12 +223,12 @@ class HomeCarCareService extends React.Component {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/delete-product", requestOptions)
+      fetch(`${URL}delete-product`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {
             this.getProducts();
-            ToastAndroid.show(result.message,2000);
+            ToastAndroid.show(result.message, 2000);
           }
         })
         .catch(error => console.log("error", error));
@@ -245,10 +255,11 @@ class HomeCarCareService extends React.Component {
         <ImageBackground
           style={{ width: width * 0.45, height: width * 0.28 }}
           imageStyle={{ borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
-         
           source={
             item.image
-              ? { uri:`https://xionex.in/CarCare/public/vendor/upload/${item.image}` }
+              ? {
+                  uri: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`
+                }
               : require("../../assets/self_service_pic_2.png")
           }
         >
@@ -299,6 +310,17 @@ class HomeCarCareService extends React.Component {
           >
             {item.name}
           </Text>
+          <View style={{ alignItems: "flex-start" }}>
+            <StarRating
+              disabled={true}
+              maxStars={5}
+              rating={parseInt(item.avg_rating)}
+              starSize={14}
+              starStyle={{
+                color: "#FFB74D"
+              }}
+            />
+          </View>
           <Text
             numberOfLines={1}
             style={{

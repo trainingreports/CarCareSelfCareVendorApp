@@ -9,6 +9,7 @@ import {
   Image,
   Button
 } from "react-native";
+import {URL} from '../../DomainConstant';
 
 const VerifyOtp = ({ route, navigation }) => {
   const { phone } = route.params;
@@ -26,7 +27,7 @@ const VerifyOtp = ({ route, navigation }) => {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/check-otp", requestOptions)
+      fetch(`${URL}check-otp`, requestOptions)
         .then(response => response.json())
         .then(response => {
           console.log(response);

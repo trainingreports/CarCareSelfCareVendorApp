@@ -10,6 +10,8 @@ import {
   Image
 } from "react-native";
 import AsyncStorage from "@react-native-community/async-storage";
+import {URL} from '../../DomainConstant';
+import StarRating from "react-native-star-rating";
 
 const ItemService = ({ item }) => (
   <View style={styles.item}>
@@ -28,6 +30,17 @@ const ItemService = ({ item }) => (
          {item.name}
         </Text>
         <Text style={{ width: "50%", fontWeight: "bold" }}>{item.price} AED </Text>
+        <View style={{ width: "25%"}}>
+        <StarRating
+                  disabled={true}
+                  maxStars={5}
+                  rating={parseInt(item.avg_rating)}
+                  starSize={14}
+                  starStyle={{
+                    color: "#FFB74D"
+                  }}
+                />
+        </View>
         <Text style={{ width: "98%", color: "#B3B3B3" }}>
           {item.description}
         </Text>
@@ -72,7 +85,7 @@ const ServicePage = ({ navigation }) => {
           };
 
           fetch(
-            "https://xionex.in/CarCare/api/v1/my-self-service",
+            `${URL}my-self-service`,
             requestOptions
           )
             .then(response => response.json())
@@ -95,7 +108,7 @@ const ServicePage = ({ navigation }) => {
           };
 
           fetch(
-            "https://xionex.in/CarCare/api/v1/my-car-service",
+            `${URL}my-car-service`,
             requestOptions
           )
             .then(response => response.json())

@@ -14,103 +14,95 @@ import {
   ToastAndroid
 } from "react-native";
 import Carousel from "react-native-snap-carousel";
-import { Calendar } from "react-native-calendars";
+import Calendar from "react-native-calendar";
 import { ScrollView } from "react-native-gesture-handler";
 import AsyncStorage from "@react-native-community/async-storage";
 import UserPermissions from "../../UserPermissions";
 import * as ImagePicker from "expo-image-picker";
+import moment from "moment";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import StarRating from "react-native-star-rating";
+import { URL } from "../../DomainConstant";
+import { AntDesign } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("screen");
 
 class EmpAbility extends React.Component {
   state = {
     modalVisible: false,
+    date: new Date(1598051730000),
+    showFrom: false,
+    showTo: false,
+    from: "",
+    to: "",
     ID: "",
     newEmpName: "",
+    AddNewEmployee: false,
     newEmpImg: null,
     employeeList: [],
-    serviceData: [
-      {
-        id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba23423sdf",
-        title: "First Item"
-      },
-      {
-        id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63234234dsf",
-        title: "Second Item"
-      },
-      {
-        id: "58694a0f-3da1-471f-bd96-145571e29d72234234sdf",
-        title: "Third Item"
-      },
-      {
-        id: "586sdfsd94a0f-3da1-471f-bd96-145571e29d72234234sdf",
-        title: "Third Item"
-      }
-    ],
-    isDateTimePickerVisible: false
+    employeesAvailability: {},
+    employeesAvailabilityCheck: false,
+    selected_emp: "",
+    selected_date: "",
+    selected_month: "",
+    selected_service: "",
+    serviceData: [],
+    isDateTimePickerVisible: false,
+    availabilityTab: true,
+    employeesDisability: [],
+    self: false,
+    check: false,
+    availableServices: []
   };
   renderItem1 = ({ item }) => {
     return (
-      <View style={styles.item}>
+      <TouchableOpacity
+        onPress={() => this.setState({ selected_service: item.id })}
+        style={styles.item}
+      >
         <View style={styles.buttonContainer}>
           <Image
             style={{
               width: 108,
-              height: 108
+              height: 108,
+              marginLeft: 15,
+              borderRadius: 5
             }}
             resizeMode={"cover"}
-            source={require("../../assets/self_service_pic_2.png")}
+            source={{
+              uri: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`
+            }}
           />
           <View style={{ width: "76%", marginStart: 10, marginEnd: 10 }}>
-            <View style={styles.buttonContainer}>
-              <Text style={{ width: "80%", textAlign: "left" }}>
-                Implant Bridges{" "}
-              </Text>
-              <TouchableOpacity
-                style={{
-                  borderRadius: 4
+            <Text style={{ width: "50%", fontWeight: "bold" }}>
+              {item.name}
+            </Text>
+
+            <Text style={{ width: "50%", fontWeight: "bold" }}>
+              {item.price} AED{" "}
+            </Text>
+            <View style={{ alignItems: "flex-start" }}>
+              <StarRating
+                disabled={true}
+                maxStars={5}
+                rating={parseInt(item.avg_rating)}
+                starSize={14}
+                starStyle={{
+                  color: "#FFB74D"
                 }}
-              >
-                <Image
-                  style={{
-                    width: 26,
-                    height: 26,
-                    marginEnd: 2
-                  }}
-                  resizeMode={"cover"}
-                  source={require("../../assets/edit.png")}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  borderRadius: 4
-                }}
-              >
-                <Image
-                  style={{
-                    width: 26,
-                    height: 26,
-                    marginEnd: 2
-                  }}
-                  resizeMode={"cover"}
-                  source={require("../../assets/delete.png")}
-                />
-              </TouchableOpacity>
+              />
             </View>
-            <Text style={{ width: "50%", fontWeight: "bold" }}>25.00 AED </Text>
             <Text style={{ width: "98%", color: "#B3B3B3" }}>
-              Lorem ipsum, or lipsum as it is sometimes known, is dummy text
-              used in laying out print,{" "}
+              {item.description}
             </Text>
             <Text style={{ width: "98%", color: "#808080" }}>
-              2 Hrs 30 Min{" "}
+              {item.updated_at}
             </Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
-
   getEmployees = () => {
     this.getId().then(id => {
       var formdata = new FormData();
@@ -122,12 +114,12 @@ class EmpAbility extends React.Component {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/get-employee", requestOptions)
+      fetch(`${URL}get-employee`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {
-            console.log("EMPLOYEE DATA===>",result.data);
-            this.setState({ employeeList: result.data });
+            console.log("EMPLOYEE DATA===>", result.data);
+            this.setState({ employeeList: [{}, ...result.data] });
           }
         })
         .catch(error => console.log("error", error));
@@ -142,12 +134,133 @@ class EmpAbility extends React.Component {
       console.log(e);
     }
   };
+  getRole = async () => {
+    try {
+      const value = await AsyncStorage.getItem("self");
+      return value;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  getDataCar = () => {
+    this.getId().then(id => {
+      this.setState({ user_id: id });
+      var formdata = new FormData();
+      formdata.append("user_id", id);
 
+      var requestOptions = {
+        method: "POST",
+        body: formdata,
+        redirect: "follow"
+      };
+
+      fetch(`${URL}my-car-service`, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            console.log("Car Services =====>", result.data);
+            this.setState({ serviceData: result.data });
+          }
+        })
+        .catch(error => console.log("error", error));
+    });
+  };
+  getDataSelf = () => {
+    this.getId().then(id => {
+      this.setState({ user_id: id });
+      var formdata = new FormData();
+      formdata.append("user_id", id);
+
+      var requestOptions = {
+        method: "POST",
+        body: formdata,
+        redirect: "follow"
+      };
+
+      fetch(`${URL}my-self-service`, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+          if (result.status) {
+            this.setState({ serviceData: result.data });
+          }
+        })
+        .catch(error => console.log("error", error));
+    });
+  };
+  getServices = () => {
+    this.getRole().then(role => {
+      if (role === "true") {
+        this.getDataSelf();
+      } else {
+        this.getDataCar();
+      }
+    });
+  };
   componentDidMount() {
     this.getId();
+    this.getRole().then(role => {
+      if (role === "true") {
+        this.setState({ self: true });
+      } else {
+        this.setState({ self: false });
+      }
+    });
     this.getEmployees();
+    this.getServices();
+    this.getDis();
+    const didFocusSubscription = this.props.navigation.addListener(
+      "focus",
+      () => {
+        this.getId();
+        this.getRole().then(role => {
+          if (role === "true") {
+            this.setState({ self: true });
+          } else {
+            this.setState({ self: false });
+          }
+        });
+        this.getEmployees();
+        this.getServices();
+        this.getDis();
+      }
+    );
   }
+  getDis = () => {
+    if (!this.state.self) {
+      const d = moment().format("L");
+      const m = String(d).slice(0, 2);
+      const y = String(d).slice(6, 10);
+      const f = y + "-" + m;
+      this.getId().then(id => {
+        var formdata = new FormData();
+        formdata.append("user_id", id);
+        formdata.append("em_id", "");
+        formdata.append("date", f);
 
+        var requestOptions = {
+          method: "POST",
+          body: formdata,
+          redirect: "follow"
+        };
+
+        fetch(`${URL}get-disable-availability`, requestOptions)
+          .then(response => response.json())
+          .then(result => {
+            if (result.status) {
+              result.data.forEach(item => {
+                this.setState({
+                  employeesDisability: [
+                    ...this.state.employeesDisability,
+                    item.date
+                  ]
+                });
+              });
+            }
+          })
+          .catch(error => console.log("error", error));
+      });
+    }
+  };
   handleDpUpload = async () => {
     try {
       await UserPermissions.getCameraPermission();
@@ -164,10 +277,9 @@ class EmpAbility extends React.Component {
       console.log(E);
     }
   };
-
   addEmployee = () => {
     if (this.state.newEmpName) {
-      console.log(this.state.newEmpImg)
+      console.log(this.state.newEmpImg);
       var formdata = new FormData();
       formdata.append("user_id", this.state.ID);
       formdata.append("name", this.state.newEmpName);
@@ -176,7 +288,6 @@ class EmpAbility extends React.Component {
         uri: this.state.newEmpImg,
         name: this.state.newEmpImg
       });
-      //formdata.append("image", null);
 
       var requestOptions = {
         method: "POST",
@@ -184,7 +295,7 @@ class EmpAbility extends React.Component {
         redirect: "follow"
       };
 
-      fetch("https://xionex.in/CarCare/api/v1/add-employee", requestOptions)
+      fetch(`${URL}add-employee`, requestOptions)
         .then(response => response.json())
         .then(result => {
           if (result.status) {
@@ -199,15 +310,156 @@ class EmpAbility extends React.Component {
     }
   };
   getEmployeesAvailability = () => {
+    if (this.state.selected_emp === "" && this.state.self) {
+      alert("Please select an employee");
+    } else if (this.state.selected_date === "") {
+      alert("Please select a date");
+    } else {
+      this.getId().then(id => {
+        if (this.state.self) {
+          var formdata = new FormData();
+          formdata.append("user_id", id);
+          formdata.append("em_id", this.state.selected_emp);
+          formdata.append("date", this.state.selected_date);
 
-  }
+          var requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow"
+          };
 
-  renderItem = ({ item, index }) => {
+          fetch(`${URL}get-availability`, requestOptions)
+            .then(response => response.json())
+            .then(result => {
+              if (result.status) {
+                console.log("DATA====>", result.data.selfservices);
+                this.setState({
+                  employeesAvailability: result.data,
+                  availableServices: result.data.selfservices,
+                  employeesAvailabilityCheck: true
+                });
+              } else {
+                alert("Nothing");
+              }
+            })
+            .catch(error => console.log("error", error));
+        } else {
+          console.log(id, this.state.selected_date);
+          var formdata = new FormData();
+          formdata.append("user_id", id);
+          formdata.append("em_id", "");
+          formdata.append("date", this.state.selected_date);
+
+          var requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow"
+          };
+
+          fetch(`${URL}get-availability`, requestOptions)
+            .then(response => response.json())
+            .then(result => {
+              if (result.status) {
+                this.setState({
+                  employeesAvailability: result.data,
+                  availableServices: result.data.carservices,
+                  employeesAvailabilityCheck: true
+                });
+              } else {
+                ToastAndroid.show("No Availability Found", 3000);
+                this.setState({
+                  employeesAvailability: {},
+                  availableServices: [],
+                  employeesAvailabilityCheck: false
+                });
+              }
+            })
+            .catch(error => console.log("error", error));
+        }
+      });
+    }
+  };
+  addEmployeesAvailability = () => {
+    if (this.state.selected_emp === "" && this.state.self) {
+      alert("Please select an employee");
+    } else if (this.state.selected_date === "") {
+      alert("Please select a date");
+    } else if (this.state.from === "") {
+      alert("Please select service start time");
+    } else if (this.state.to === "") {
+      alert("Please select service end time");
+    } else if (this.state.selected_service === "") {
+      alert("Please select a service");
+    } else {
+      this.getId().then(id => {
+        if (this.state.self) {
+          var formdata = new FormData();
+          formdata.append("user_id", id);
+          formdata.append("em_id", this.state.selected_emp);
+          formdata.append("date", this.state.selected_date);
+          formdata.append("time_from", this.state.from);
+          formdata.append("time_to", this.state.to);
+          formdata.append("self_services", this.state.selected_service);
+          formdata.append("car_services", "");
+
+          var requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow"
+          };
+
+          fetch(`${URL}add-availability`, requestOptions)
+            .then(response => response.json())
+            .then(result => {
+              if (result.status) {
+                ToastAndroid.show(result.message, 2000);
+                this.setState({ AddNewEmployee: false });
+              }
+            })
+            .catch(error => console.log("error", error));
+        } else {
+          var formdata = new FormData();
+          formdata.append("user_id", id);
+          formdata.append("em_id", "");
+          formdata.append("date", this.state.selected_date);
+          formdata.append("time_from", this.state.from);
+          formdata.append("time_to", this.state.to);
+          formdata.append("self_services", "");
+          formdata.append("car_services", this.state.selected_service);
+
+          var requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow"
+          };
+
+          fetch(`${URL}add-availability`, requestOptions)
+            .then(response => response.json())
+            .then(result => {
+              if (result.status) {
+                ToastAndroid.show(result.message, 2000);
+                this.setState({ AddNewEmployee: false });
+              }
+            })
+            .catch(error => console.log("error", error));
+        }
+      });
+    }
+  };
+  onChangeFrom = (event, selectedDate) => {
+    this.setState({ showFrom: false });
+    this.setState({ from: moment(selectedDate).format("LT") });
+  };
+  onChangeTo = (event, selectedDate) => {
+    this.setState({ showTo: false });
+    this.setState({ to: moment(selectedDate).format("LT") });
+  };
+  renderItem2 = ({ item, index }) => {
     return (
       <View>
         {index === 0 ? (
           <TouchableOpacity
-          activeOpacity={1}
+            activeOpacity={1}
             onPress={() => this.setState({ modalVisible: true })}
             style={{
               width: width * 0.23,
@@ -217,7 +469,7 @@ class EmpAbility extends React.Component {
               alignItems: "center",
               backgroundColor: "#fff",
               elevation: 2,
-              margin: 2
+              margin: 5
             }}
           >
             <Image
@@ -226,12 +478,26 @@ class EmpAbility extends React.Component {
             />
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity 
-          onPress={()=>this.getEmployeesAvailability(item.id)}
-          activeOpacity={1} style={{ margin: 0 }}>
+          <TouchableOpacity
+            onPress={() => {
+              const d = moment().format("L");
+              const m = String(d).slice(0, 2);
+              const y = String(d).slice(6, 10);
+              const f = y + "-" + m;
+              this.setState({
+                selected_emp: item.id,
+                selected_month: f
+              });
+              this.getEmployeesDisability();
+            }}
+            activeOpacity={1}
+            style={{ margin: 0 }}
+          >
             <Image
               style={{ width: width / 4, height: width / 4, borderRadius: 10 }}
-              source={{uri:`https://xionex.in/CarCare/public/vendor/upload/${item.image}`}}
+              source={{
+                uri: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`
+              }}
             />
             <Text style={{ textAlign: "center", marginTop: 5 }}>
               {item.name}
@@ -241,165 +507,879 @@ class EmpAbility extends React.Component {
       </View>
     );
   };
+  getEmployeesDisability = () => {
+    this.setState({ employeesDisability: [] });
+    this.getId().then(id => {
+      if (this.state.self) {
+        var formdata = new FormData();
+        formdata.append("user_id", id);
+        formdata.append("em_id", this.state.selected_emp);
+        formdata.append("date", this.state.selected_month);
+
+        var requestOptions = {
+          method: "POST",
+          body: formdata,
+          redirect: "follow"
+        };
+
+        fetch(`${URL}get-disable-availability`, requestOptions)
+          .then(response => response.json())
+          .then(result => {
+            if (result.status) {
+              result.data.forEach(item => {
+                this.setState({
+                  employeesDisability: [
+                    ...this.state.employeesDisability,
+                    item.date
+                  ]
+                });
+              });
+            }
+          })
+          .catch(error => console.log("error", error));
+      } else {
+        var formdata = new FormData();
+        formdata.append("user_id", id);
+        formdata.append("em_id", "");
+        formdata.append("date", this.state.selected_month);
+
+        var requestOptions = {
+          method: "POST",
+          body: formdata,
+          redirect: "follow"
+        };
+
+        fetch(`${URL}get-disable-availability`, requestOptions)
+          .then(response => response.json())
+          .then(result => {
+            if (result.status) {
+              result.data.forEach(item => {
+                this.setState({
+                  employeesDisability: [
+                    ...this.state.employeesDisability,
+                    item.date
+                  ]
+                });
+              });
+            }
+          })
+          .catch(error => console.log("error", error));
+      }
+    });
+  };
+  disableEmployeesAvailability = () => {
+    if (this.state.selected_emp === "" && this.state.self) {
+      alert("Please select an employee");
+    } else if (this.state.selected_date === "") {
+      alert("Please select a date");
+    } else {
+      this.getId().then(id => {
+        if (this.state.self) {
+          var formdata = new FormData();
+          formdata.append("user_id", id);
+          formdata.append("em_id", this.state.selected_emp);
+          formdata.append("date", this.state.selected_date);
+
+          var requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow"
+          };
+
+          fetch(`${URL}disable-availability`, requestOptions)
+            .then(response => response.json())
+            .then(result => {
+              if (result.status) {
+                ToastAndroid.show(result.message, 2000);
+              }
+            })
+            .catch(error => console.log("error", error));
+        } else {
+          var formdata = new FormData();
+          formdata.append("user_id", id);
+          formdata.append("em_id", "");
+          formdata.append("date", this.state.selected_date);
+
+          var requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow"
+          };
+
+          fetch(`${URL}disable-availability`, requestOptions)
+            .then(response => response.json())
+            .then(result => {
+              if (result.status) {
+                ToastAndroid.show(result.message, 2000);
+              }
+            })
+            .catch(error => console.log("error", error));
+        }
+      });
+    }
+  };
 
   render() {
     return (
       <View style={{ flex: 1 }}>
         <ScrollView>
-          <Text
+          <View
             style={{
-              fontSize: 18,
-              marginLeft: 10,
-              marginVertical: 20,
-              fontWeight: "bold"
-            }}
-          >
-            ADD EMPLOYEE & AVALIABILITY
-          </Text>
-          <Animated.View>
-          {!this.state.employeeList.length
-          ?<TouchableOpacity
-            onPress={() => this.setState({ modalVisible: true })}
-            style={{
-              width: width * 0.23,
-              height: width * 0.23,
-              borderRadius: 10,
-              justifyContent: "center",
+              flexDirection: "row",
               alignItems: "center",
-              backgroundColor: "#fff",
-              elevation: 2,
-              margin: 2,
-              alignSelf:'center'
+              justifyContent: "space-evenly"
             }}
           >
-            <Image
-              style={{ height: 35, width: 35 }}
-              source={require("../../assets/add_service_Product.png")}
-            />
-          </TouchableOpacity>
-           :<Carousel
-              data={this.state.employeeList}
-              sliderWidth={width}
-              itemWidth={100}
-              inactiveSlideOpacity={0.75}
-              inactiveSlideScale={0.9}
-              renderItem={this.renderItem}
-            />}
-          </Animated.View>
-          <Text
-            style={{
-              fontSize: 18,
-              marginLeft: 10,
-              marginVertical: 20,
-              fontWeight: "bold",
-              opacity: 0.5
-            }}
-          >
-            DAYS AVAILABILITY
-          </Text>
-          <Calendar
-            // Initially visible month. Default = Date()
-            theme={{
-              monthTextColor: "blue"
-            }}
-            current={"2021-02-11"}
-            renderHeader={date => {
-              /*Return JSX*/
-            }}
-            onDayPress={date => alert(date.dateString)}
-            enableSwipeMonths={true}
-            markedDates={{
-              "2021-02-15": { textColor: "green" },
-              "2021-02-12": { startingDay: true, color: "green" },
-              "2021-02-12": {
-                selected: true,
-                endingDay: true,
-                color: "green",
-                textColor: "gray"
-              },
-              "2021-02-06": {
-                selected: true,
-                endingDay: true,
-                color: "green",
-                textColor: "gray"
-              },
-              "2021-02-10": {
-                selected: true,
-                endingDay: true,
-                color: "green",
-                textColor: "gray"
-              },
-              "2021-02-11": {
-                selected: true,
-                endingDay: true,
-                color: "green",
-                textColor: "gray"
-              },
-              "2021-02-12": {
-                selected: true,
-                endingDay: true,
-                color: "green",
-                textColor: "gray"
-              },
-              "2021-02-17": {
-                disabled: true,
-                startingDay: true,
-                color: "red",
-                textColor: "red",
-                endingDay: true
+            <TouchableOpacity
+              onPress={() => this.setState({ availabilityTab: true })}
+              style={
+                this.state.availabilityTab
+                  ? {
+                      backgroundColor: "#00C8E4",
+                      borderColor: "#00C8E4",
+                      borderWidth: 2,
+                      width: width / 2,
+                      paddingVertical: width * 0.03,
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }
+                  : {
+                      backgroundColor: "#fff",
+                      borderColor: "#00C8E4",
+                      borderWidth: 2,
+                      width: width / 2,
+                      paddingVertical: width * 0.03,
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }
               }
-            }}
-          />
-          <Text
-            style={{
-              fontSize: 18,
-              marginLeft: 10,
-              marginVertical: 20,
-              fontWeight: "bold",
-              opacity: 0.5
-            }}
-          >
-            TIME AVAILABILITY
-          </Text>
-          <View style={{ flex: 1, flexDirection: "row" }}>
-            <TextInput
-              placeholder="From"
-              style={{
-                borderWidth: 2,
-                borderColor: "#ddd",
-                height: 30,
-                padding: 5,
-                width: width / 2 - 10
+            >
+              <Text
+                style={
+                  this.state.availabilityTab
+                    ? {
+                        color: "#fff",
+                        fontWeight: "700",
+                        fontSize: 18
+                      }
+                    : {
+                        color: "#00C8E4",
+                        fontWeight: "700",
+                        fontSize: 18
+                      }
+                }
+              >
+                Availability
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({ availabilityTab: false });
               }}
-            />
-            <TextInput
-              style={{
-                borderWidth: 2,
-                borderColor: "#ddd",
-                padding: 5,
-                height: 30,
-                width: width / 2 - 10,
-                marginLeft: 10
-              }}
-              placeholder="To"
-            />
+              style={
+                !this.state.availabilityTab
+                  ? {
+                      backgroundColor: "#00C8E4",
+                      borderColor: "#00C8E4",
+                      borderWidth: 2,
+                      width: width / 2,
+                      paddingVertical: width * 0.03,
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }
+                  : {
+                      backgroundColor: "#fff",
+                      borderColor: "#00C8E4",
+                      borderWidth: 2,
+                      width: width / 2,
+                      paddingVertical: width * 0.03,
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }
+              }
+            >
+              <Text
+                style={
+                  !this.state.availabilityTab
+                    ? {
+                        color: "#fff",
+                        fontWeight: "700",
+                        fontSize: 18
+                      }
+                    : {
+                        color: "#00C8E4",
+                        fontWeight: "700",
+                        fontSize: 18
+                      }
+                }
+              >
+                Disability
+              </Text>
+            </TouchableOpacity>
           </View>
-          <Text
-            style={{
-              fontSize: 18,
-              marginLeft: 10,
-              marginVertical: 20,
-              fontWeight: "bold",
-              opacity: 0.5
-            }}
-          >
-            SELECT SERVICE
-          </Text>
-          <FlatList
-            data={this.state.serviceData}
-            renderItem={this.renderItem1}
-            keyExtractor={item => item.id}
-          />
+
+          {this.state.availabilityTab ? (
+            <>
+              {this.state.self && (
+                <>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      marginLeft: 10,
+                      marginVertical: 20,
+                      fontWeight: "bold"
+                    }}
+                  >
+                    ADD EMPLOYEE & AVALIABILITY
+                  </Text>
+                  <Animated.View>
+                    {!this.state.employeeList.length ? (
+                      <TouchableOpacity
+                        onPress={() => this.setState({ modalVisible: true })}
+                        style={{
+                          width: width * 0.23,
+                          height: width * 0.23,
+                          borderRadius: 10,
+                          justifyContent: "center",
+                          alignItems: "center",
+                          backgroundColor: "#fff",
+                          elevation: 2,
+                          margin: 2,
+                          alignSelf: "center"
+                        }}
+                      >
+                        <Image
+                          style={{ height: 35, width: 35 }}
+                          source={require("../../assets/add_service_Product.png")}
+                        />
+                      </TouchableOpacity>
+                    ) : (
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                      >
+                        {this.state.employeeList.map((item, index) => (
+                          <View>
+                            {index === 0 ? (
+                              <TouchableOpacity
+                                activeOpacity={1}
+                                onPress={() =>
+                                  this.setState({ modalVisible: true })
+                                }
+                                style={{
+                                  width: width / 4,
+                                  height: width / 4,
+                                  borderRadius: 10,
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                  backgroundColor: "#fff",
+                                  elevation: 2,
+                                  margin: 5,
+                                  marginLeft: 50
+                                }}
+                              >
+                                <Image
+                                  style={{ height: 35, width: 35 }}
+                                  source={require("../../assets/add_service_Product.png")}
+                                />
+                              </TouchableOpacity>
+                            ) : (
+                              <TouchableOpacity
+                                onPress={() =>
+                                  this.setState({ selected_emp: item.id })
+                                }
+                                style={{ margin: 5 }}
+                              >
+                                <Image
+                                  style={{
+                                    width: width / 4,
+                                    height: width / 4,
+                                    borderRadius: 10
+                                  }}
+                                  source={{
+                                    uri: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`
+                                  }}
+                                />
+                                <Text
+                                  style={{ textAlign: "center", marginTop: 5 }}
+                                >
+                                  {item.name}
+                                </Text>
+                                {this.state.selected_emp === item.id && (
+                                  <View
+                                    style={{
+                                      position: "absolute",
+                                      top: -5,
+                                      right: -5,
+                                      backgroundColor: "#fff"
+                                    }}
+                                  >
+                                    <AntDesign
+                                      name="checkcircle"
+                                      size={20}
+                                      color="black"
+                                    />
+                                  </View>
+                                )}
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        ))}
+                      </ScrollView>
+                    )}
+                  </Animated.View>
+                </>
+              )}
+              <Text
+                style={{
+                  fontSize: 18,
+                  marginLeft: 10,
+                  marginVertical: 20,
+                  fontWeight: "bold",
+                  opacity: 0.5
+                }}
+              >
+                DAYS AVAILABILITY
+              </Text>
+              <Calendar
+                showEventIndicators
+                showControls
+                eventDates={[]}
+                onDateSelect={date => {
+                  const d = String(date).slice(0, 10);
+                  this.setState({ selected_date: d });
+                }}
+                customStyle={{
+                  calendarContainer: {},
+                  hasEventCircle: {
+                    backgroundColor: "#00C8E4"
+                  },
+                  currentDayText: {
+                    color: "#00C8E4"
+                  },
+                  weekendDayText: {
+                    color: "#000"
+                  },
+                  day: {
+                    color: "#000"
+                  }
+                }}
+              />
+
+              {this.state.employeesAvailabilityCheck &&
+                !this.state.AddNewEmployee && (
+                  <>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        marginLeft: 10,
+                        marginVertical: 20,
+                        fontWeight: "bold",
+                        opacity: 0.5
+                      }}
+                    >
+                      Employee Availability
+                    </Text>
+                    <View>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          marginLeft: 10,
+                          marginVertical: 5,
+                          fontWeight: "bold",
+                          opacity: 0.5
+                        }}
+                      >
+                        From: {this.state.employeesAvailability.time_from}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          marginLeft: 10,
+                          marginVertical: 5,
+                          fontWeight: "bold",
+                          opacity: 0.5
+                        }}
+                      >
+                        To: {this.state.employeesAvailability.time_to}
+                      </Text>
+                    </View>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        marginLeft: 10,
+                        marginVertical: 20,
+                        fontWeight: "bold",
+                        opacity: 0.5
+                      }}
+                    >
+                      AVAILABLE SERVICES
+                    </Text>
+                    <FlatList
+                      data={this.state.availableServices}
+                      renderItem={this.renderItem1}
+                      keyExtractor={item => item.id}
+                    />
+                  </>
+                )}
+
+              {!this.state.AddNewEmployee && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-evenly",
+                    marginTop: 10
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={this.getEmployeesAvailability}
+                    style={{
+                      backgroundColor: "#00C8E4",
+                      padding: width * 0.03,
+                      borderRadius: 5,
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontWeight: "700"
+                      }}
+                    >
+                      {this.state.self
+                        ? "Get Employee Availability"
+                        : "Get Availability"}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => this.setState({ AddNewEmployee: true })}
+                    style={{
+                      backgroundColor: "#00C8E4",
+                      padding: width * 0.03,
+                      borderRadius: 5,
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontWeight: "700"
+                      }}
+                    >
+                      {this.state.self
+                        ? "Add Employee Availability"
+                        : "Add Availability"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {this.state.AddNewEmployee && (
+                <>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      marginLeft: 10,
+                      marginVertical: 20,
+                      fontWeight: "bold",
+                      opacity: 0.5
+                    }}
+                  >
+                    TIME AVAILABILITY
+                  </Text>
+                  <View
+                    style={{
+                      flex: 1,
+                      flexDirection: "row",
+                      paddingHorizontal: 10,
+                      justifyContent: "space-between"
+                    }}
+                  >
+                    <View>
+                      <Text style={{ color: "gray", marginBottom: 10 }}>
+                        From (hh:mm){" "}
+                      </Text>
+                      <TouchableOpacity
+                        style={{
+                          borderWidth: 2,
+                          borderColor: "#ddd",
+                          height: 30,
+                          padding: 5,
+                          width: width / 2.3
+                        }}
+                        onPress={() => this.setState({ showFrom: true })}
+                      >
+                        <TextInput
+                          placeholder="00:00"
+                          value={this.state.from}
+                          editable={false}
+                        />
+                      </TouchableOpacity>
+
+                      {this.state.showFrom && (
+                        <DateTimePicker
+                          testID="dateTimePicker"
+                          value={this.state.date}
+                          mode="time"
+                          is24Hour={true}
+                          display="default"
+                          onChange={this.onChangeFrom}
+                        />
+                      )}
+                    </View>
+                    <View>
+                      <Text style={{ color: "gray", marginBottom: 10 }}>
+                        To (hh:mm){" "}
+                      </Text>
+                      <TouchableOpacity
+                        style={{
+                          borderWidth: 2,
+                          borderColor: "#ddd",
+                          height: 30,
+                          padding: 5,
+                          width: width / 2.3
+                        }}
+                        onPress={() => this.setState({ showTo: true })}
+                      >
+                        <TextInput
+                          placeholder="00:00"
+                          value={this.state.to}
+                          editable={false}
+                        />
+                      </TouchableOpacity>
+
+                      {this.state.showTo && (
+                        <DateTimePicker
+                          testID="dateTimePicker"
+                          value={this.state.date}
+                          mode="time"
+                          is24Hour={true}
+                          display="default"
+                          onChange={this.onChangeTo}
+                        />
+                      )}
+                    </View>
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      marginLeft: 10,
+                      marginVertical: 20,
+                      fontWeight: "bold",
+                      opacity: 0.5
+                    }}
+                  >
+                    SELECT SERVICE
+                  </Text>
+                  <ScrollView>
+                    {this.state.serviceData.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() =>
+                          this.setState({ selected_service: item.id })
+                        }
+                        style={
+                          this.state.selected_service === item.id
+                            ? {
+                                ...styles.item,
+                                borderWidth: 1,
+                                paddingHorizontal: 20
+                              }
+                            : styles.item
+                        }
+                      >
+                        <View style={styles.buttonContainer}>
+                          <Image
+                            style={{
+                              width: 108,
+                              height: 108,
+                              marginLeft: 15,
+                              borderRadius: 5
+                            }}
+                            resizeMode={"cover"}
+                            source={{
+                              uri: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`
+                            }}
+                          />
+                          <View
+                            style={{
+                              width: "76%",
+                              marginStart: 10,
+                              marginEnd: 10
+                            }}
+                          >
+                            <Text style={{ width: "50%", fontWeight: "bold" }}>
+                              {item.name}
+                            </Text>
+
+                            <Text style={{ width: "50%", fontWeight: "bold" }}>
+                              {item.price} AED{" "}
+                            </Text>
+                            <View style={{ alignItems: "flex-start" }}>
+                              <StarRating
+                                disabled={true}
+                                maxStars={5}
+                                rating={parseInt(item.avg_rating)}
+                                starSize={14}
+                                starStyle={{
+                                  color: "#FFB74D"
+                                }}
+                              />
+                            </View>
+                            <Text style={{ width: "98%", color: "#B3B3B3" }}>
+                              {item.description}
+                            </Text>
+                            <Text style={{ width: "98%", color: "#808080" }}>
+                              {item.updated_at}
+                            </Text>
+                          </View>
+                        </View>
+                        {this.state.selected_service === item.id && (
+                          <View
+                            style={{
+                              position: "absolute",
+                              top: -5,
+                              right: -5,
+                              backgroundColor: "#fff"
+                            }}
+                          >
+                            <AntDesign
+                              name="checkcircle"
+                              size={25}
+                              color="black"
+                            />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                  <TouchableOpacity
+                    onPress={this.addEmployeesAvailability}
+                    style={{
+                      backgroundColor: "#00C8E4",
+                      padding: width * 0.03,
+                      borderRadius: 5,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginVertical: 15
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontWeight: "700"
+                      }}
+                    >
+                      {this.state.self
+                        ? "Add Employee Availability"
+                        : "Add Availability"}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {this.state.self && (
+                <>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      marginLeft: 10,
+                      marginVertical: 20,
+                      fontWeight: "bold"
+                    }}
+                  >
+                    ADD EMPLOYEE & DISABILITY
+                  </Text>
+                  <Animated.View>
+                    {!this.state.employeeList.length ? (
+                      <TouchableOpacity
+                        onPress={() => this.setState({ modalVisible: true })}
+                        style={{
+                          width: width * 0.23,
+                          height: width * 0.23,
+                          borderRadius: 10,
+                          justifyContent: "center",
+                          alignItems: "center",
+                          backgroundColor: "#fff",
+                          elevation: 2,
+                          margin: 2,
+                          alignSelf: "center"
+                        }}
+                      >
+                        <Image
+                          style={{ height: 35, width: 35 }}
+                          source={require("../../assets/add_service_Product.png")}
+                        />
+                      </TouchableOpacity>
+                    ) : (
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                      >
+                        {this.state.employeeList.map((item, index) => (
+                          <View>
+                            {index === 0 ? (
+                              <TouchableOpacity
+                                activeOpacity={1}
+                                onPress={() =>
+                                  this.setState({ modalVisible: true })
+                                }
+                                style={{
+                                  width: width / 4,
+                                  height: width / 4,
+                                  borderRadius: 10,
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                  backgroundColor: "#fff",
+                                  elevation: 2,
+                                  margin: 5,
+                                  marginLeft: 50
+                                }}
+                              >
+                                <Image
+                                  style={{ height: 35, width: 35 }}
+                                  source={require("../../assets/add_service_Product.png")}
+                                />
+                              </TouchableOpacity>
+                            ) : (
+                              <TouchableOpacity
+                                onPress={() => {
+                                  const d = moment().format("L");
+                                  const m = String(d).slice(0, 2);
+                                  const y = String(d).slice(6, 10);
+                                  const f = y + "-" + m;
+                                  this.setState({
+                                    selected_emp: item.id,
+                                    selected_month: f
+                                  });
+                                  this.getEmployeesDisability();
+                                }}
+                                style={{ margin: 5 }}
+                              >
+                                <Image
+                                  style={{
+                                    width: width / 4,
+                                    height: width / 4,
+                                    borderRadius: 10
+                                  }}
+                                  source={{
+                                    uri: `https://xionex.in/CarCare/public/vendor/upload/${item.image}`
+                                  }}
+                                />
+                                <Text
+                                  style={{ textAlign: "center", marginTop: 5 }}
+                                >
+                                  {item.name}
+                                </Text>
+                                {this.state.selected_emp === item.id && (
+                                  <View
+                                    style={{
+                                      position: "absolute",
+                                      top: -5,
+                                      right: -5,
+                                      backgroundColor: "#fff"
+                                    }}
+                                  >
+                                    <AntDesign
+                                      name="checkcircle"
+                                      size={20}
+                                      color="black"
+                                    />
+                                  </View>
+                                )}
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        ))}
+                      </ScrollView>
+                    )}
+                  </Animated.View>
+                </>
+              )}
+
+              <Text
+                style={{
+                  fontSize: 18,
+                  marginLeft: 10,
+                  marginVertical: 20,
+                  fontWeight: "bold",
+                  opacity: 0.5
+                }}
+              >
+                DAYS DISABILITY
+              </Text>
+              <Calendar
+                showEventIndicators
+                showControls
+                eventDates={this.state.employeesDisability}
+                onDateSelect={date => {
+                  const d = String(date).slice(0, 10);
+                  this.setState({ selected_date: d });
+                }}
+                onTouchNext={date => {
+                  const d = moment(date).format("L");
+                  const m = String(d).slice(0, 2);
+                  const y = String(d).slice(6, 10);
+                  const f = y + "-" + m;
+                  this.setState({
+                    selected_month: f
+                  });
+                  this.getEmployeesDisability();
+                }}
+                onTouchPrev={date => {
+                  const d = moment(date).format("L");
+                  const m = String(d).slice(0, 2);
+                  const y = String(d).slice(6, 10);
+                  const f = y + "-" + m;
+                  this.setState({
+                    selected_month: f
+                  });
+                  this.getEmployeesDisability();
+                }}
+                customStyle={{
+                  calendarContainer: {},
+                  hasEventCircle: {
+                    backgroundColor: "#00C8E4"
+                  },
+                  currentDayText: {
+                    color: "#00C8E4"
+                  },
+                  weekendDayText: {
+                    color: "#000"
+                  },
+                  day: {
+                    color: "#000"
+                  }
+                }}
+              />
+
+              <TouchableOpacity
+                onPress={this.disableEmployeesAvailability}
+                style={{
+                  backgroundColor: "#00C8E4",
+                  padding: width * 0.03,
+                  borderRadius: 5,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginVertical: 10
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "700"
+                  }}
+                >
+                  Disable Availability
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
         </ScrollView>
 
         <Modal

@@ -11,6 +11,7 @@ import ServicePage from '../profilePages/ServicePage';
 import AboutUsPage from '../profilePages/AboutUsPage';
 import ReviewsPage from '../profilePages/ReviewsPage';
 import AsyncStorage from '@react-native-community/async-storage';
+import{URL} from '../../DomainConstant';
 
 const Stack = createStackNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -42,7 +43,7 @@ class TabStack extends React.Component {
       };
 
       fetch(
-        "https://xionex.in/CarCare/api/v1/get-business-info",
+        `${URL}get-business-info`,
         requestOptions
       )
         .then(response => response.json())

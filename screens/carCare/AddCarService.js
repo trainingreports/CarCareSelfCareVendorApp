@@ -20,6 +20,8 @@ import UserPermissions from "../../UserPermissions";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
+import {URL} from '../../DomainConstant';
+
 class AddCarService extends React.Component {
   state = {
     category: "",
@@ -70,7 +72,7 @@ class AddCarService extends React.Component {
         };
 
         fetch(
-          "https://xionex.in/CarCare/api/v1/car-care-category",
+          `${URL}car-care-category`,
           requestOptions
         )
           .then(response => response.json())
@@ -92,7 +94,7 @@ class AddCarService extends React.Component {
         };
 
         fetch(
-          "https://xionex.in/CarCare/api/v1/car-care-product-category",
+          `${URL}car-care-product-category`,
           requestOptions
         )
           .then(response => response.json())
@@ -203,7 +205,7 @@ class AddCarService extends React.Component {
           };
 
           fetch(
-            "https://xionex.in/CarCare/api/v1/edit-car-service",
+            `${URL}edit-car-service`,
             requestOptions
           )
             .then(response => response.json())
@@ -240,7 +242,7 @@ class AddCarService extends React.Component {
             redirect: "follow"
           };
 
-          fetch("https://xionex.in/CarCare/api/v1/edit-product", requestOptions)
+          fetch(`${URL}edit-product`, requestOptions)
             .then(response => response.json())
             .then(result => {
               if (result.status) {
@@ -275,7 +277,7 @@ class AddCarService extends React.Component {
           };
 
           fetch(
-            "https://xionex.in/CarCare/api/v1/add-car-service",
+            `${URL}add-car-service`,
             requestOptions
           )
             .then(response => response.json())
@@ -311,7 +313,7 @@ class AddCarService extends React.Component {
             redirect: "follow"
           };
 
-          fetch("https://xionex.in/CarCare/api/v1/add-product", requestOptions)
+          fetch(`${URL}add-product`, requestOptions)
             .then(response => response.json())
             .then(result => {
               if (result.status) {
@@ -351,26 +353,6 @@ class AddCarService extends React.Component {
               selectedValue={this.state.category}
               onValueChange={(itemValue, itemIndex) => {
                 this.setState({ category: itemValue });
-                //   var formdata = new FormData();
-                //   formdata.append("clinic_id", itemValue);
-
-                //   var requestOptions = {
-                //     method: "POST",
-                //     body: formdata,
-                //     redirect: "follow"
-                //   };
-
-                //   fetch(
-                //     "https://xionex.in/CarCare/api/v1/sub-category",
-                //     requestOptions
-                //   )
-                //     .then(response => response.json())
-                //     .then(result => {
-                //       if (result.status) {
-                //         this.setState({ subCategoryList: result.data });
-                //       }
-                //     })
-                //     .catch(error => console.log("error", error));
               }}
             >
               {this.state.categoryList.map((item, i) => {

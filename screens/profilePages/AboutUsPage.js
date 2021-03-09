@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { TouchableOpacity, StyleSheet, View, Text, SafeAreaView, Image } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
+import {URL} from '../../DomainConstant';
 
 const AboutUsPage = ({ route,navigation }) => {
   const [profile,setProfile] = React.useState({});
@@ -28,7 +29,7 @@ const AboutUsPage = ({ route,navigation }) => {
       };
 
       fetch(
-        "https://xionex.in/CarCare/api/v1/get-business-info",
+        `${URL}get-business-info`,
         requestOptions
       )
         .then(response => response.json())
