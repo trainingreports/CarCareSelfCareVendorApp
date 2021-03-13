@@ -32,6 +32,7 @@ class Login extends React.Component {
   }
 
   signInAsync = async () => {
+    this.setState({wait:true})
     const result = await Google.logInAsync({
       androidClientId:
         "766262472004-8ucj60k0gsanfmjm5snjhfdu3b9qi2a4.apps.googleusercontent.com",
@@ -73,10 +74,14 @@ class Login extends React.Component {
                 social: true,
                 user: user
               });
+              this.setState({wait:false})
             }
           })
-          .catch(error => console.log("error", error));
+          .catch(error =>{
+            this.setState({wait:false})
+            console.log("error", error)});
     }
+    this.setState({wait:false})
   };
 
   storeData = async (id, vertical) => {
@@ -145,6 +150,7 @@ class Login extends React.Component {
   };
 
   signInWithFb = async () => {
+    this.setState({wait:true})
     try {
       await Facebook.initializeAsync("842471036316892", "Self care");
       const result = await Facebook.logInWithReadPermissionsAsync({
@@ -189,13 +195,17 @@ class Login extends React.Component {
                 social: true,
                 user: user
               });
+              this.setState({wait:false})
             }
           })
-          .catch(error => console.log("error", error));
+          .catch(error => {
+            this.setState({wait:false})
+            console.log("error", error)});
       }
     } catch ({ message }) {
       alert(`Facebook Login Error: ${message}`);
     }
+    this.setState({wait:false})
   };
 
   render() {

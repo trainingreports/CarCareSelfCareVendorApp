@@ -310,6 +310,7 @@ class EmpAbility extends React.Component {
     }
   };
   getEmployeesAvailability = () => {
+    ToastAndroid.show('Please wait..',3000)
     if (this.state.selected_emp === "" && this.state.self) {
       alert("Please select an employee");
     } else if (this.state.selected_date === "") {
@@ -339,7 +340,12 @@ class EmpAbility extends React.Component {
                   employeesAvailabilityCheck: true
                 });
               } else {
-                alert("Nothing");
+                ToastAndroid.show("No Availability Found", 3000);
+                this.setState({
+                  employeesAvailability: {},
+                  availableServices: [],
+                  employeesAvailabilityCheck: false
+                });
               }
             })
             .catch(error => console.log("error", error));
@@ -508,6 +514,7 @@ class EmpAbility extends React.Component {
     );
   };
   getEmployeesDisability = () => {
+    ToastAndroid.show('Please wait..',3500)
     this.setState({ employeesDisability: [] });
     this.getId().then(id => {
       if (this.state.self) {
@@ -785,9 +792,18 @@ class EmpAbility extends React.Component {
                               </TouchableOpacity>
                             ) : (
                               <TouchableOpacity
-                                onPress={() =>
+                                onPress={() =>{
                                   this.setState({ selected_emp: item.id })
-                                }
+                                  const d = moment().format("L");
+                                  const m = String(d).slice(0, 2);
+                                  const y = String(d).slice(6, 10);
+                                  const f = y + "-" + m;
+                                  this.setState({
+                                    selected_emp: item.id,
+                                    selected_month: f
+                                  });
+                                  this.getEmployeesDisability();
+                                }}
                                 style={{ margin: 5 }}
                               >
                                 <Image
@@ -844,11 +860,32 @@ class EmpAbility extends React.Component {
               <Calendar
                 showEventIndicators
                 showControls
-                eventDates={[]}
+                eventDates={this.state.employeesDisability}
                 onDateSelect={date => {
                   const d = String(date).slice(0, 10);
                   this.setState({ selected_date: d });
                 }}
+                onTouchNext={date => {
+                  const d = moment(date).format("L");
+                  const m = String(d).slice(0, 2);
+                  const y = String(d).slice(6, 10);
+                  const f = y + "-" + m;
+                  this.setState({
+                    selected_month: f
+                  });
+                  this.getEmployeesDisability();
+                }}
+                onTouchPrev={date => {
+                  const d = moment(date).format("L");
+                  const m = String(d).slice(0, 2);
+                  const y = String(d).slice(6, 10);
+                  const f = y + "-" + m;
+                  this.setState({
+                    selected_month: f
+                  });
+                  this.getEmployeesDisability();
+                }}
+  
                 customStyle={{
                   calendarContainer: {},
                   hasEventCircle: {
@@ -979,6 +1016,15 @@ class EmpAbility extends React.Component {
 
               {this.state.AddNewEmployee && (
                 <>
+                 <Text
+                    style={{
+                      fontSize: 10,
+                      textAlign:'center',
+                      marginTop:5
+                    }}
+                  >
+                    Blue encircled dates are disabled ones.
+                  </Text>
                   <Text
                     style={{
                       fontSize: 18,
